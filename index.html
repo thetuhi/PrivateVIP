@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- initial-scale=1 with no maximum-scale: pinch zoom stays available. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0F0E0C" />
+
+ <title>Private VIP Istanbul. Private Tours, Yacht Charters &amp; VIP Transfers</title>
+    <meta
+      name="description"
+      content="A private guide, a private car and a city that answers to your schedule. Bespoke Istanbul itineraries, Bosphorus yacht charters and VIP airport transfers."
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="canonical" href="https://privatevipistanbul.com/" />
+
+    <!-- Social share defaults. Per-route values are set at runtime by useSeo(). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Private VIP Istanbul" />
+    <meta property="og:title" content="Private VIP Istanbul" />
+    <meta
+      property="og:description"
+      content="Bespoke Istanbul itineraries, Bosphorus yacht charters and VIP airport transfers."
+    />
+    <meta property="og:image" content="/images/brand/og-cover.webp" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Fonts are self-hosted (see scripts/fetch-fonts.mjs). No third-party
+         origin sits in front of first paint, and no visitor IP is handed to a
+ font CDN, which is what the privacy policy promises.
+
+         Only the two faces the hero actually paints with are preloaded: the
+         display weight for the headline and the body weight for the lede.
+         Preloading all 40 subsets would saturate the connection and delay the
+         very text this is meant to speed up. The rest arrive on demand via
+         each face's unicode-range. -->
+    <link
+      rel="preload"
+      href="/fonts/cormorant-garamond-400-normal-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="preload" href="/fonts/inter-300-normal-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <style>
+      /* Painted before the CSS bundle arrives so the first frame is already
+ Nocturne, no white flash on a slow connection. */
+      html {
+        background-color: #0b0a09;
+        color-scheme: dark;
+      }
+      #root {
+        min-height: 100dvh;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

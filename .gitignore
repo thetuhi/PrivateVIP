@@ -1,0 +1,31 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+*.local
+
+# Environment. .env.example is committed; real values never are.
+.env
+.env.*
+!.env.example
+
+# Full-resolution photo masters. Optimised WebP in public/images/ is committed.
+originals
+
+# Generated report, rebuilt by `npm run photos`
+PHOTO-MANIFEST.txt
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+*.log
+logs
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+
+# Local tool settings, machine-specific
+.claude/settings.local.json

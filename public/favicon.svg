@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Private VIP Istanbul">
+  <rect width="64" height="64" rx="6" fill="#0F0E0C" />
+  <path
+    d="M32 11 L48 22 V42 L32 53 L16 42 V22 Z"
+    fill="none"
+    stroke="#C0A062"
+    stroke-width="2"
+    stroke-linejoin="round"
+  />
+  <path d="M26 25 h7.5 a5.5 5.5 0 0 1 0 11 H30 v7 h-4 Z M30 28.5 v4 h3.5 a2 2 0 0 0 0-4 Z" fill="#C0A062" />
+</svg>
