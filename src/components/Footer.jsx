@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Phone, Mail, MapPin } from 'lucide-react'
 import Logo from './Logo'
 import InstagramGlyph from './icons/InstagramGlyph'
+import TikTokGlyph from './icons/TikTokGlyph'
 import { brand, fullAddress } from '../config/brand'
 import { whatsappLink, telegramLink, phoneLink, mailtoLink, mapsLink } from '../utils/contact'
 import { trackEvent } from '../utils/analytics'
@@ -28,6 +29,16 @@ const LEGAL = [
   { to: '/policy/privacy', key: 'legalPrivacy' },
 ]
 
+/**
+ * Social accounts, in the order they are shown. Each entry renders only if
+ * `brand.social[key]` holds a URL, so an account that does not exist yet leaves
+ * no empty square behind. Names are brand names, never translated.
+ */
+const SOCIAL = [
+  { key: 'instagram', label: 'Instagram', Glyph: InstagramGlyph },
+  { key: 'tiktok', label: 'TikTok', Glyph: TikTokGlyph },
+]
+
 export default function Footer() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage ?? 'en'
@@ -48,16 +59,23 @@ export default function Footer() {
             <Logo />
             <p className="prose-body mt-4 max-w-xs text-sm">{t('footer.tagline')}</p>
 
-            {brand.social.instagram && (
-              <a
-                href={brand.social.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="mt-4 inline-flex h-10 w-10 items-center justify-center rounded-card border border-ink-700 text-bone-dim transition-colors duration-micro ease-enter hover:border-brass-600 hover:text-brass-400"
-              >
-                <InstagramGlyph className="h-4 w-4" />
-              </a>
+            {SOCIAL.some((s) => brand.social[s.key]) && (
+              <ul className="mt-4 flex items-center gap-2">
+                {SOCIAL.filter((s) => brand.social[s.key]).map(({ key, label, Glyph }) => (
+                  <li key={key}>
+                    <a
+                      href={brand.social[key]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      onClick={() => trackEvent('social_click', { network: key })}
+                      className="social-link"
+                    >
+                      <Glyph className="h-4 w-4" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 

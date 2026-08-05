@@ -15,16 +15,78 @@ export function whatsappLink(text) {
   return text ? `${WA_BASE}/${number}?text=${encodeURIComponent(text)}` : `${WA_BASE}/${number}`
 }
 
+/** A configured handle that is digits rather than a @username. */
+function telegramIsPhone(handle) {
+  return /^\+?\d[\d\s()-]+$/.test(handle)
+}
+
+/**
+ * True when the configured Telegram handle can carry a prefilled message.
+ *
+ * Only username links can. `t.me/+905551234567` is a contact-import link and
+ * Telegram accepts no parameters on it at all, so a `?text=` there is dropped
+ * and the visitor lands in an empty chat with the enquiry they just typed gone.
+ * Registering a @username on the business account is the single change that
+ * would make Telegram behave exactly like WhatsApp here; see brand.js.
+ */
+export function telegramCarriesText() {
+  const handle = brand.contact.telegram.trim()
+  return Boolean(handle) && !telegramIsPhone(handle)
+}
+
 /**
  * Telegram accepts either a @username or a phone number in E.164 form. A number
  * has to keep its leading "+", so it is normalised here rather than at the call
  * site, and a username is passed through untouched.
+ *
+ * `text` is honoured only where Telegram honours it; see telegramCarriesText.
  */
-export function telegramLink() {
+export function telegramLink(text) {
   const handle = brand.contact.telegram.trim()
   if (!handle) return null
-  const isPhone = /^\+?\d[\d\s()-]+$/.test(handle)
-  return isPhone ? `https://t.me/+${handle.replace(/\D/g, '')}` : `https://t.me/${handle.replace(/^@/, '')}`
+
+  if (telegramIsPhone(handle)) return `https://t.me/+${handle.replace(/\D/g, '')}`
+
+  const username = handle.replace(/^@/, '')
+  return text ? `https://t.me/${username}?text=${encodeURIComponent(text)}` : `https://t.me/${username}`
+}
+
+/**
+ * Open Telegram with the enquiry attached, by whatever means the configured
+ * handle allows. Resolves to what actually happened:
+ *
+ *   'sent'   the message rode in the URL, exactly like WhatsApp
+ *   'copied' the link could not carry it, so it is on the clipboard to paste
+ *   'manual' neither worked; the chat is open but empty
+ *
+ * Callers are expected to tell the visitor which of the three it was. Claiming
+ * the enquiry was copied when the clipboard was refused leaves someone staring
+ * at an empty chat with nothing to paste, which is worse than saying nothing.
+ *
+ * The clipboard write is deliberately awaited *before* the window is opened:
+ * writing to the clipboard from a document that has just been backgrounded is
+ * refused by every browser that implements the permission properly.
+ */
+export async function openTelegram(message) {
+  const href = telegramLink(message)
+  if (!href) return 'manual'
+
+  const open = () => window.open(href, '_blank', 'noopener,noreferrer')
+
+  if (!message || telegramCarriesText()) {
+    open()
+    return 'sent'
+  }
+
+  let copied = false
+  try {
+    await navigator.clipboard.writeText(message)
+    copied = true
+  } catch {
+    /* No clipboard API, or permission refused. The chat still opens. */
+  }
+  open()
+  return copied ? 'copied' : 'manual'
 }
 
 export function phoneLink() {
@@ -68,8 +130,13 @@ export function enquiryMessage(itemName, lang = 'en') {
 /**
  * Turn a completed bespoke form into a readable WhatsApp message. Written as
  * labelled lines rather than JSON so the recipient can act on it directly.
+ *
+ * `phone` arrives already in international form rather than being composed
+ * here: this module is imported by the header and the footer, so it is in the
+ * bundle on every page, and the 150-country dialling table it would need is
+ * only ever wanted on the enquiry form.
  */
-export function bespokeMessage(form, t) {
+export function bespokeMessage(form, t, phone = '') {
   const lines = [
     t('bespoke.title'),
     '',
@@ -94,7 +161,10 @@ export function bespokeMessage(form, t) {
 
   lines.push('', `${t('bespoke.fields.name')}: ${form.name || '-'}`)
   if (form.email) lines.push(`${t('bespoke.fields.email')}: ${form.email}`)
-  if (form.phone) lines.push(`${t('bespoke.fields.phone')}: ${form.phone}`)
+
+  // Always in full international form. A number that arrives without its
+  // country code is a number nobody can call back.
+  if (phone) lines.push(`${t('bespoke.fields.phone')}: ${phone}`)
 
   return lines.join('\n')
 }

@@ -14,7 +14,7 @@ import { yachts, charterOccasions } from '../data/yachts'
 import { localise, formatPrice } from '../utils/localise'
 import { enquiryMessage } from '../utils/contact'
 import { useSeo } from '../utils/useSeo'
-import { fadeUp } from '../motion/presets'
+import { fadeUp, viewportEarly } from '../motion/presets'
 import MessageChannels from '../components/MessageChannels'
 
 /**
@@ -38,9 +38,14 @@ function YachtRow({ yacht, index, onOpenGallery }) {
   ]
 
   return (
-    <RevealItem
+    // Each row carries its own trigger rather than inheriting one from a
+    // stagger group. A stagger only makes sense for items that share a screen;
+    // these are taller than the viewport, and gating them on the parent list
+    // meant the first yacht sat visible but unrevealed for 780px of scrolling.
+    <Reveal
       as="li"
       variant={fadeUp}
+      viewport={viewportEarly}
       className="grid items-center gap-8 border-t border-ink-800 pt-14 lg:grid-cols-12 lg:gap-14"
     >
       <div className={`lg:col-span-7 ${reversed ? 'lg:order-2' : ''}`}>
@@ -48,8 +53,6 @@ function YachtRow({ yacht, index, onOpenGallery }) {
           type="button"
           onClick={() => onOpenGallery(yacht)}
           aria-label={`${t('a11y.openGallery')}, ${name}`}
-          data-cursor="view"
-          data-cursor-label={t('experiences.gallery')}
           className="group relative block w-full cursor-pointer overflow-hidden rounded-card"
         >
           {/* Alternating wipe direction follows the alternating layout, so the
@@ -118,7 +121,7 @@ function YachtRow({ yacht, index, onOpenGallery }) {
           <MessageChannels message={enquiryMessage(name, lang)} location={`yacht:${yacht.slug}`} />
         </div>
       </div>
-    </RevealItem>
+    </Reveal>
   )
 }
 
@@ -162,11 +165,11 @@ export default function Yachts() {
           <h2 id="fleet-heading" className="sr-only">
             {t('yachts.fleetTitle')}
           </h2>
-          <RevealGroup as="ul" className="flex flex-col gap-16 lg:gap-24">
+          <ul className="flex flex-col gap-16 lg:gap-24">
             {yachts.map((yacht, index) => (
               <YachtRow key={yacht.slug} yacht={yacht} index={index} onOpenGallery={openGallery} />
             ))}
-          </RevealGroup>
+          </ul>
         </div>
       </section>
 

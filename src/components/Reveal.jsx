@@ -16,6 +16,8 @@ export default function Reveal({
   as = 'div',
   variant = fadeUp,
   delay = 0,
+  /** Override the trigger threshold, e.g. viewportEarly for tall blocks. */
+  viewport = viewportOnce,
   className,
   ...rest
 }) {
@@ -28,7 +30,7 @@ export default function Reveal({
       className={className}
       initial="hidden"
       whileInView="visible"
-      viewport={viewportOnce}
+      viewport={viewport}
       variants={active}
       transition={delay ? { delay } : undefined}
       {...rest}

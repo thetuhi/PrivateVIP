@@ -23,6 +23,29 @@ import SmartImage from '../SmartImage'
 // The over-scale is what buys the parallax its travel: an image at scale 1 that
 // drifts 12% would expose its own edge. Scale and drift are tied together below
 // so that can never happen.
+//
+// The two effects are driven by different mechanisms, deliberately:
+//
+//   the wipe   → IntersectionObserver
+//   the drift  → ScrollTrigger
+//
+// because they fail differently. The wipe starts with the frame clipped shut,
+// so if whatever opens it never runs, the photograph is simply gone. The drift
+// failing means an image that does not drift, which nobody notices.
+//
+// ScrollTrigger resolves "top 98%" against positions it cached at refresh time,
+// and this site suppresses its resize handling (ignoreMobileResize, set in
+// motion/gsap.js, so a phone hiding its URL bar does not re-pin mid-scroll).
+// On a long page that reflows after those positions were taken, a trigger can
+// end up waiting for a scroll offset that no longer corresponds to the element,
+// and never fire. That is survivable for a drift and not survivable for the
+// only picture of the boat, which is exactly what went wrong on phones, where
+// the rows stack and the page is three times taller.
+//
+// IntersectionObserver has no cached geometry to go stale: the browser answers
+// from current layout, and it reports the initial state on observe, so a frame
+// that is already on screen opens on the next frame rather than waiting for a
+// scroll that may never come.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function ScrollImage({
@@ -65,46 +88,78 @@ export default function ScrollImage({
         right: 'inset(0% 0% 0% 100%)',
       }[reveal]
 
-      const tl = gsap.timeline({
-        scrollTrigger: { trigger: frame, start: 'top 86%', once: true },
-      })
+      // Starts wider than the frame and settles, but never below the scale the
+      // parallax needs, or the drift would reveal an edge.
+      const restScale = 1 + parallax / 100
 
-      tl.fromTo(
-        frame,
-        { clipPath: closed },
-        { clipPath: 'inset(0%)', duration: 1.15, ease: EASE.veil },
-      )
-
+      const tl = gsap.timeline({ paused: true })
+      tl.fromTo(frame, { clipPath: closed }, { clipPath: 'inset(0%)', duration: 1.15, ease: EASE.veil })
       if (img) {
-      // Starts wider than the frame and settles, but never below the scale
-        // the parallax needs, or the drift would reveal an edge.
-        const restScale = 1 + parallax / 100
-        tl.fromTo(
-          img,
-          { scale: restScale + 0.14 },
-          { scale: restScale, duration: 1.5, ease: EASE.luxe },
-          0,
-        )
-
-        if (parallax > 0) {
-          gsap.fromTo(
-            img,
-            { yPercent: -parallax / 2 },
-            {
-              yPercent: parallax / 2,
-              ease: 'none',
-              scrollTrigger: {
-                trigger: frame,
-                start: 'top bottom',
-                end: 'bottom top',
-                // scrub ties the tween to scroll position; 0.6 adds a short
-                // catch-up so it glides instead of snapping frame to frame.
-                scrub: 0.6,
-              },
-            },
-          )
-        }
+        tl.fromTo(img, { scale: restScale + 0.14 }, { scale: restScale, duration: 1.5, ease: EASE.luxe }, 0)
       }
+
+      let observer
+
+      // No IntersectionObserver: show the picture. An entrance is a courtesy,
+      // never a precondition for the content existing.
+      if (typeof IntersectionObserver === 'undefined') {
+        tl.progress(1)
+      } else {
+        // -2% bottom margin is the old "top 98%": the wipe begins as the frame
+        // reaches the bottom edge, so it has finished by the time the frame is
+        // properly in view.
+        observer = new IntersectionObserver(
+          (entries) => {
+            const entry = entries[entries.length - 1]
+
+            // Two ways to deserve opening, not one.
+            //
+            // The obvious one is intersecting. The other is having been passed:
+            // a fling scroll on a phone, or a tab that was backgrounded and
+            // throttled, can carry a frame from below the fold to above it
+            // between two observer callbacks. Reacting only to `isIntersecting`
+            // means that frame is never once reported visible, so it keeps the
+            // clip it was born with and the boat is never seen at all. A
+            // negative `top` says it is behind us; there is nothing left to
+            // animate, so it is simply opened.
+            if (!entry.isIntersecting && entry.boundingClientRect.top > 0) return
+
+            // Snap rather than wipe for anything already scrolled past, so
+            // scrolling back up does not meet an animation replaying at content
+            // that was on screen a moment ago.
+            if (entry.isIntersecting) tl.play()
+            else tl.progress(1)
+
+            // Only ever disconnected once the frame is open, so any later
+            // callback still gets the chance to rescue it.
+            observer.disconnect()
+          },
+          { rootMargin: '0px 0px -2% 0px' },
+        )
+        observer.observe(frame)
+      }
+
+      if (img && parallax > 0) {
+        gsap.fromTo(
+          img,
+          { yPercent: -parallax / 2 },
+          {
+            yPercent: parallax / 2,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: frame,
+              start: 'top bottom',
+              end: 'bottom top',
+              // scrub ties the tween to scroll position; 0.6 adds a short
+              // catch-up so it glides instead of snapping frame to frame.
+              scrub: 0.6,
+            },
+          },
+        )
+      }
+
+      // useGSAP reverts the tweens and triggers it owns; the observer is ours.
+      return () => observer?.disconnect()
     },
     { scope: frameRef, dependencies: [reduced, parallax, reveal] },
   )

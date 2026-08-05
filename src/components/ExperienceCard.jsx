@@ -22,9 +22,6 @@ import { cardIn } from '../motion/presets'
  *   · a brass rule wipes across beneath the title
  *   · the corner disc fills and the arrow steps out
  *   · the card itself tilts a degree or two toward the pointer
- *
- * `data-cursor="view"` swaps the custom cursor to its labelled disc, which is
- * what tells the visitor the image is the target and not just decoration.
  */
 export default function ExperienceCard({ experience, priority = false, sizes, as = 'article' }) {
   const { t, i18n } = useTranslation()
@@ -38,7 +35,7 @@ export default function ExperienceCard({ experience, priority = false, sizes, as
     // card in an extra li with `display: contents` strips them in Safari.
     <RevealItem as={as} variant={cardIn} className="group relative flex flex-col">
       <TiltCard max={3} lift={12} className="flex h-full flex-col">
-        <div data-cursor="view" data-cursor-label={t('common.viewDetails')} className="overflow-hidden rounded-card">
+        <div className="overflow-hidden rounded-card">
           <SmartImage
             src={src}
             alt={title}

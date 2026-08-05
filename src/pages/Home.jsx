@@ -159,7 +159,35 @@ function Hero() {
     <section ref={rootRef} className="relative isolate flex min-h-[100dvh] items-end overflow-hidden">
       {/* Over-scaled so the parallax travel can never expose an edge. */}
       <div data-hero-media className="absolute inset-0 scale-[1.28] will-change-transform">
-        <SmartImage src="/images/hero/bosphorus-dusk.webp" alt="" fill priority sizes="100vw" />
+        <SmartImage
+          src="/images/hero/bosphorus-dusk.webp"
+          alt=""
+          fill
+          priority
+          // Art direction, not a default. The photograph is a 16:9 skyline with
+          // Sultanahmet on the left and Ayasofya's dome centred at 67.8% across.
+          // A phone held upright shows roughly a quarter of that width, and
+          // centring it lands the crop in the trees *between* the two, so the
+          // hero opened on an empty ridge with one minaret clipped at the edge.
+          //
+          // 74%, not 67.8%, because object-position aligns the same *relative*
+          // point in image and box rather than nominating a focal point. To put
+          // a feature at fraction d of the image in the middle of a window
+          // showing fraction f of its width, the position is (d - f/2) / (1 - f);
+          // at f ~ 0.26 that puts the dome dead centre with a minaret each side.
+          //
+          // Keyed to aspect ratio rather than a width breakpoint: how badly this
+          // crops depends on the shape of the viewport, not how many pixels wide
+          // it is. A landscape phone is narrow and needs no correction at all.
+          imgClassName="[@media(max-aspect-ratio:3/4)]:object-[74%_50%]"
+          // The rendered width is not the viewport width. This image fills a box
+          // 1.28x the viewport and is then cover-fitted, so on any screen taller
+          // than 16:9 it is height-bound: 100vh x 1.7778 x 1.28 = 228vh wide.
+          // Saying "100vw" had phones downloading the 640w file to paint it
+          // ~1900px wide, which is the softness in the hero, on the one image
+          // that is also the LCP.
+          sizes="(max-aspect-ratio: 16/9) 228vh, 128vw"
+        />
       </div>
 
       <div className="absolute inset-0 scrim-full" aria-hidden="true" />
@@ -294,9 +322,12 @@ function Pillars() {
           </div>
         </div>
 
-        <RevealGroup as="ul" each={0.1} className="flex flex-col lg:col-span-7 lg:col-start-6">
+        {/* Stacked and tall, so each pillar triggers on itself. See the note
+            in Yachts: a stagger group gates every child on the parent, which
+            leaves the first item visible but hidden on a long list. */}
+        <ul className="flex flex-col lg:col-span-7 lg:col-start-6">
           {PILLARS.map(({ key, Icon }, index) => (
-            <RevealItem
+            <Reveal
               as="li"
               key={key}
               variant={fadeUp}
@@ -316,9 +347,9 @@ function Pillars() {
                   {t(`pillars.${key}Body`)}
                 </p>
               </div>
-            </RevealItem>
+            </Reveal>
           ))}
-        </RevealGroup>
+        </ul>
       </div>
     </section>
   )

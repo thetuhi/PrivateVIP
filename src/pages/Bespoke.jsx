@@ -6,9 +6,18 @@ import { AlertCircle, ArrowLeft, ArrowRight, Check, Mail } from 'lucide-react'
 
 import SectionHeading from '../components/SectionHeading'
 import Reveal from '../components/Reveal'
+import PhoneField from '../components/PhoneField'
 import { getExperience } from '../data/experiences'
+import {
+  countryName,
+  digitsOf,
+  expectedDigits,
+  guessCountry,
+  internationalPhone,
+  phoneLengthProblem,
+} from '../data/dialCodes'
 import { localise } from '../utils/localise'
-import { whatsappLink, telegramLink, mailtoLink, bespokeMessage } from '../utils/contact'
+import { whatsappLink, openTelegram, mailtoLink, bespokeMessage } from '../utils/contact'
 import { trackEvent } from '../utils/analytics'
 import { useSeo } from '../utils/useSeo'
 import { EASE_ENTER, EASE_EXIT } from '../motion/presets'
@@ -35,15 +44,45 @@ const EMPTY_FORM = {
   notes: '',
   name: '',
   email: '',
+  // The national number only. Its country code lives in `phoneCountry`, so the
+  // two are never conflated and the enquiry always leaves with a dialable number.
   phone: '',
+  phoneCountry: '',
   language: '',
   consent: false,
 }
 
+/**
+ * Hard bounds for the three count fields. Enforced in three places that have to
+ * agree: the keystroke filter (digits only, so "-2" cannot be typed), the blur
+ * clamp, and validate() for anything pasted or restored from an old draft.
+ *
+ * The maxima are the point where an enquiry stops being an enquiry and becomes
+ * a coach tour, which is not what this company sells.
+ */
+const LIMITS = {
+  nights: { min: 1, max: 60 },
+  adults: { min: 1, max: 30 },
+  children: { min: 0, max: 20 },
+}
+
+/** Digits only. Strips the minus, the "e" and the decimal point outright. */
+function digitsOnly(value) {
+  return value.replace(/\D/g, '')
+}
+
+/** Pulls an out-of-range count back to the nearest bound. Empty stays empty. */
+function clampCount(value, field) {
+  const digits = digitsOnly(value)
+  if (!digits) return ''
+  const { min, max } = LIMITS[field]
+  return String(Math.min(Math.max(Number(digits), min), max))
+}
+
 /** Which fields belong to which step, so validation can run per step. */
 const STEP_FIELDS = {
-  1: ['arrival'],
-  2: ['adults'],
+  1: ['arrival', 'nights'],
+  2: ['adults', 'children'],
   3: [],
   4: ['name', 'contact', 'consent'],
 }
@@ -83,6 +122,11 @@ function restoreDraft({ searchParams, lang, t }) {
       }
     }
   }
+
+  // The dialling code is guessed once, here, rather than inside the picker, so
+  // the form state stays the single source of truth and a restored draft keeps
+  // whatever the visitor actually chose.
+  if (!restored.phoneCountry) restored = { ...restored, phoneCountry: guessCountry(lang) }
 
   return restored.language ? restored : { ...restored, language: lang }
 }
@@ -183,9 +227,9 @@ export default function Bespoke() {
   const [form, setForm] = useState(() => restoreDraft({ searchParams, lang, t }))
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
-  // null until a Telegram send; then true/false depending on whether the
-  // clipboard write was permitted, so the confirmation can tell the truth.
-  const [telegramCopied, setTelegramCopied] = useState(null)
+  // null until a Telegram send, then 'sent' | 'copied' | 'manual', so the
+  // confirmation can tell the truth about what actually reached the chat.
+  const [telegramOutcome, setTelegramOutcome] = useState(null)
 
   const summaryRef = useRef(null)
   const stepHeadingRef = useRef(null)
@@ -234,6 +278,45 @@ export default function Bespoke() {
     })
   }
 
+  /**
+   * The three count fields, wired identically.
+   *
+   * Deliberately not `type="number"`. A number input still lets "-2", "1e5"
+   * and "3.5" be typed, reports them to JS as an empty string so the form
+   * cannot even see what went wrong, and changes value when the wheel rolls
+   * over it mid-scroll. `inputMode="numeric"` raises the same phone keypad
+   * without any of that, and the filter below means the field can only ever
+   * hold digits, so a negative or fractional count is unreachable rather than
+   * merely rejected.
+   *
+   * Out-of-range values are clamped on blur rather than mid-keystroke: someone
+   * typing 12 passes through 1, and snapping that to the minimum as they type
+   * would fight them.
+   */
+  function countFieldProps(field) {
+    const { min, max } = LIMITS[field]
+    return {
+      type: 'text',
+      inputMode: 'numeric',
+      autoComplete: 'off',
+      // Announces the bounds to assistive tech, which `type="text"` otherwise
+      // gives no way to know.
+      role: 'spinbutton',
+      'aria-valuemin': min,
+      'aria-valuemax': max,
+      'aria-valuenow': form[field] === '' ? undefined : Number(form[field]),
+      'aria-invalid': Boolean(errors[field]),
+      maxLength: String(max).length,
+      value: form[field],
+      onChange: (e) => update(field, digitsOnly(e.target.value)),
+      onBlur: () => {
+        const clamped = clampCount(form[field], field)
+        if (clamped !== form[field]) update(field, clamped)
+      },
+      className: 'input',
+    }
+  }
+
   function toggleInList(field, value) {
     setForm((prev) => {
       const list = prev[field]
@@ -256,8 +339,29 @@ export default function Bespoke() {
       }
     }
 
+    // Nights is optional, but a number that is there has to be a real one.
+    // Zero nights is not a trip and sixty is not a private tour.
+    if (fields.includes('nights') && data.nights !== '') {
+      const nights = Number(digitsOnly(data.nights))
+      if (!Number.isFinite(nights) || nights < LIMITS.nights.min || nights > LIMITS.nights.max) {
+        found.nights = t('bespoke.errors.nightsRange', LIMITS.nights)
+      }
+    }
+
     if (fields.includes('adults')) {
-      if (!data.adults || Number(data.adults) < 1) found.adults = t('bespoke.errors.adultsRequired')
+      const adults = Number(digitsOnly(data.adults))
+      if (!data.adults || !Number.isFinite(adults) || adults < LIMITS.adults.min) {
+        found.adults = t('bespoke.errors.adultsRequired')
+      } else if (adults > LIMITS.adults.max) {
+        found.adults = t('bespoke.errors.adultsMax', LIMITS.adults)
+      }
+    }
+
+    if (fields.includes('children') && data.children !== '') {
+      const children = Number(digitsOnly(data.children))
+      if (!Number.isFinite(children) || children > LIMITS.children.max) {
+        found.children = t('bespoke.errors.childrenMax', LIMITS.children)
+      }
     }
 
     if (fields.includes('name') && !data.name.trim()) {
@@ -266,11 +370,24 @@ export default function Bespoke() {
 
     if (fields.includes('contact')) {
       const hasEmail = data.email.trim().length > 0
-      const hasPhone = data.phone.trim().length > 0
-      if (!hasEmail && !hasPhone) {
+      const phoneDigits = digitsOf(data.phone)
+
+      if (!hasEmail && !phoneDigits) {
         found.email = t('bespoke.errors.contactRequired')
       } else if (hasEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email.trim())) {
         found.email = t('bespoke.errors.emailInvalid')
+      }
+
+      // Length against the chosen country, which is the check that actually
+      // catches a dropped or doubled digit. Says which way it is wrong and how
+      // many digits were expected, because "invalid" tells nobody anything.
+      const problem = phoneLengthProblem(data.phoneCountry, data.phone)
+      if (problem) {
+        const expected = expectedDigits(data.phoneCountry)
+        const context = { country: countryName(data.phoneCountry, lang), expected }
+        found.phone = expected
+          ? t(`bespoke.errors.phone${problem === 'short' ? 'Short' : 'Long'}`, context)
+          : t('bespoke.errors.phoneInvalid')
       }
     }
 
@@ -307,7 +424,9 @@ export default function Bespoke() {
     setStep((s) => Math.max(s - 1, 1))
   }
 
-  const message = useMemo(() => bespokeMessage(form, t), [form, t])
+  const phonePreview = internationalPhone(form.phoneCountry, form.phone)
+  const phoneExpected = expectedDigits(form.phoneCountry)
+  const message = useMemo(() => bespokeMessage(form, t, phonePreview), [form, t, phonePreview])
 
   function send(channel) {
   // Validate every step, not just the visible one, a visitor can reach the
@@ -323,25 +442,15 @@ export default function Bespoke() {
 
     trackEvent('enquiry_submit', { channel, services: form.services.join(',') })
 
-    // Telegram is the odd one out. WhatsApp and mailto both carry a prefilled
-    // body; Telegram's phone-number links accept no message parameter at all,
-    // so opening one would hand the visitor an empty chat and quietly lose
-    // every answer they just typed.
-    //
-    // Copying the enquiry to the clipboard first turns that into a paste
-    // instead of a retype, and the confirmation screen says so explicitly.
-    // Clipboard access can be refused, so the channel is only reported as
-    // copied once the write actually resolves.
+    // Telegram is the odd one out, and how odd depends on the handle in
+    // brand.js. openTelegram owns that decision and reports back which of the
+    // three things happened, so the confirmation screen below can say something
+    // true rather than something hopeful.
     if (channel === 'telegram') {
-      const open = (copied) => {
-        setTelegramCopied(copied)
-        window.open(telegramLink(), '_blank', 'noopener,noreferrer')
+      openTelegram(message).then((result) => {
+        setTelegramOutcome(result)
         finishSend()
-      }
-      navigator.clipboard?.writeText(message).then(
-        () => open(true),
-        () => open(false),
-      ) ?? open(false)
+      })
       return
     }
 
@@ -384,19 +493,20 @@ export default function Bespoke() {
           </h1>
           <p className="prose-body mt-5">{t('bespoke.successBody')}</p>
 
-          {/* Only shown after a Telegram send, and it says which of the two
-              things actually happened. Claiming the enquiry was copied when the
-              browser refused would leave someone staring at an empty chat with
-              nothing to paste. */}
-          {telegramCopied !== null && (
+          {/* Only shown when Telegram could not carry the enquiry itself, and it
+              says which of the two fallbacks actually happened. Claiming the
+              enquiry was copied when the browser refused would leave someone
+              staring at an empty chat with nothing to paste. Nothing is shown
+              for 'sent', where the message arrived like any other. */}
+          {telegramOutcome && telegramOutcome !== 'sent' && (
             <p
               className={`mt-4 max-w-prose rounded-card border p-4 text-sm font-light leading-relaxed ${
-                telegramCopied
+                telegramOutcome === 'copied'
                   ? 'border-brass-700/60 bg-brass-500/5 text-brass-300'
                   : 'border-danger/40 bg-danger/5 text-danger'
               }`}
             >
-              {telegramCopied ? t('bespoke.telegramCopied') : t('bespoke.telegramCopyFailed')}
+              {telegramOutcome === 'copied' ? t('bespoke.telegramCopied') : t('bespoke.telegramCopyFailed')}
             </p>
           )}
 
@@ -520,20 +630,19 @@ export default function Bespoke() {
                     <Field
                       id="nights"
                       label={t('bespoke.fields.nights')}
-                      hint={form.flexible ? t('bespoke.fields.nightsHintFlexible') : undefined}
+                      error={errors.nights}
+                      hint={
+                        form.flexible
+                          ? t('bespoke.fields.nightsHintFlexible')
+                          : t('bespoke.fields.nightsHint', LIMITS.nights)
+                      }
                       relaxed={form.flexible}
                     >
                       <input
                         id="nights"
                         name="nights"
-                        type="number"
-                        inputMode="numeric"
-                        min="1"
-                        max="60"
-                        value={form.nights}
-                        onChange={(e) => update('nights', e.target.value)}
-                        aria-describedby={form.flexible ? 'nights-hint' : undefined}
-                        className="input"
+                        {...countFieldProps('nights')}
+                        aria-describedby={errors.nights ? 'nights-error' : 'nights-hint'}
                       />
                     </Field>
 
@@ -587,29 +696,17 @@ export default function Bespoke() {
                         <input
                           id="adults"
                           name="adults"
-                          type="number"
-                          inputMode="numeric"
-                          min="1"
-                          max="30"
-                          value={form.adults}
-                          onChange={(e) => update('adults', e.target.value)}
-                          aria-invalid={Boolean(errors.adults)}
+                          {...countFieldProps('adults')}
                           aria-describedby={errors.adults ? 'adults-error' : undefined}
-                          className="input"
                         />
                       </Field>
 
-                      <Field id="children" label={t('bespoke.fields.children')}>
+                      <Field id="children" label={t('bespoke.fields.children')} error={errors.children}>
                         <input
                           id="children"
                           name="children"
-                          type="number"
-                          inputMode="numeric"
-                          min="0"
-                          max="20"
-                          value={form.children}
-                          onChange={(e) => update('children', e.target.value)}
-                          className="input"
+                          {...countFieldProps('children')}
+                          aria-describedby={errors.children ? 'children-error' : undefined}
                         />
                       </Field>
                     </div>
@@ -732,17 +829,46 @@ export default function Bespoke() {
                       />
                     </Field>
 
-                    <Field id="phone" label={t('bespoke.fields.phone')} hint={t('bespoke.fields.phoneHint')}>
-                      <input
+                    <Field
+                      id="phone"
+                      label={t('bespoke.fields.phone')}
+                      error={errors.phone}
+                      // Once there are digits, the hint stops explaining the
+                      // field and starts showing exactly what will be sent.
+                      // Reading your own number back is the only check that
+                      // actually catches a wrong country code.
+                      hint={
+                        phonePreview ? (
+                          <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
+                            {t('bespoke.fields.phonePreview')}
+                            <span className="font-normal tabular-nums text-brass-300">{phonePreview}</span>
+                          </span>
+                        ) : (
+                          // Says up front how many digits the chosen country
+                          // takes, so the count is knowable before it is wrong.
+                          [
+                            t('bespoke.fields.phoneHint'),
+                            phoneExpected && t('bespoke.fields.phoneDigits', { expected: phoneExpected }),
+                          ]
+                            .filter(Boolean)
+                            .join(' ')
+                        )
+                      }
+                    >
+                      <PhoneField
                         id="phone"
-                        name="phone"
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel"
-                        value={form.phone}
-                        onChange={(e) => update('phone', e.target.value)}
-                        aria-describedby="phone-hint"
-                        className="input"
+                        country={form.phoneCountry}
+                        number={form.phone}
+                        onCountryChange={(iso) => update('phoneCountry', iso)}
+                        onNumberChange={(value) => update('phone', value)}
+                        onBlur={() => {
+                          // Same rule as the email above: on blur, never on
+                          // keystroke. A number is half-wrong all the way up
+                          // until the moment it is finished.
+                          if (form.phone.trim()) setErrors(validate(['contact']))
+                        }}
+                        error={errors.phone}
+                        describedBy={errors.phone ? 'phone-error' : 'phone-hint'}
                       />
                     </Field>
 

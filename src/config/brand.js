@@ -54,6 +54,7 @@ export const brand = {
 
   social: {
     instagram: 'https://www.instagram.com/privatevipturizm',
+    tiktok: 'https://www.tiktok.com/@private.vip.turizm',
     tripadvisor: '', // TODO, leave empty to hide the link
     youtube: '',
   },

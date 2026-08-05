@@ -365,8 +365,6 @@ export default function ExperienceDetail() {
                     type="button"
                     onClick={() => setLightboxIndex(index)}
                     aria-label={`${t('a11y.openGallery')}, ${index + 1} / ${gallery.length}`}
-                    data-cursor="view"
-                    data-cursor-label={t('experiences.gallery')}
                     className="group relative block w-full cursor-pointer overflow-hidden rounded-card"
                   >
                   {/* Each tile wipes open on entry and drifts as it passes,
