@@ -40,33 +40,52 @@ export default function TiltCard({
       if (!plane) return
       const depthLayers = plane.querySelectorAll('[data-depth]')
 
-      const rotX = gsap.quickTo(plane, 'rotationX', { duration: 0.6, ease: EASE.precise })
-      const rotY = gsap.quickTo(plane, 'rotationY', { duration: 0.6, ease: EASE.precise })
+      // Built on entry, dropped on exit. The release tweens below use
+      // `overwrite: 'auto'`, which kills every other tween touching the same
+      // properties, quickTo's included; calling one afterwards makes GSAP warn
+      // "rotationX not eligible for reset" because there is no PropTween left
+      // to retarget. Rebuilding per hover keeps a dead tween from ever being
+      // called, and the motion is identical.
+      //
+      // The depth layers get quickTo as well. They were allocating two fresh
+      // tweens per layer per mousemove, which at 120Hz across a grid of cards
+      // is thousands of objects a second for an effect that reuses two.
+      let setters = null
+
+      const buildSetters = () => {
+        setters = {
+          rotX: gsap.quickTo(plane, 'rotationX', { duration: 0.6, ease: EASE.precise }),
+          rotY: gsap.quickTo(plane, 'rotationY', { duration: 0.6, ease: EASE.precise }),
+          layers: [...depthLayers].map((layer) => ({
+            depth: parseFloat(layer.dataset.depth) || 0,
+            x: gsap.quickTo(layer, 'x', { duration: 0.7, ease: EASE.precise }),
+            y: gsap.quickTo(layer, 'y', { duration: 0.7, ease: EASE.precise }),
+          })),
+        }
+      }
 
       const onMove = (e) => {
+        if (!setters) buildSetters()
         const rect = host.getBoundingClientRect()
         // Normalised to −0.5…0.5 from the centre.
         const px = (e.clientX - rect.left) / rect.width - 0.5
         const py = (e.clientY - rect.top) / rect.height - 0.5
 
-        rotY(px * max * 2)
-        rotX(-py * max * 2)
-
-        depthLayers.forEach((layer) => {
-          const depth = parseFloat(layer.dataset.depth) || 0
-          gsap.to(layer, {
-            x: px * depth * 26,
-            y: py * depth * 26,
-            duration: 0.7,
-            ease: EASE.precise,
-            overwrite: 'auto',
-          })
+        setters.rotY(px * max * 2)
+        setters.rotX(-py * max * 2)
+        setters.layers.forEach((l) => {
+          l.x(px * l.depth * 26)
+          l.y(py * l.depth * 26)
         })
       }
 
-      const onEnter = () => gsap.to(plane, { z: lift, duration: 0.5, ease: EASE.luxe, overwrite: 'auto' })
+      const onEnter = () => {
+        buildSetters()
+        gsap.to(plane, { z: lift, duration: 0.5, ease: EASE.luxe, overwrite: 'auto' })
+      }
 
       const onLeave = () => {
+        setters = null
         gsap.to(plane, { rotationX: 0, rotationY: 0, z: 0, duration: 0.85, ease: EASE.luxe, overwrite: 'auto' })
         depthLayers.forEach((layer) =>
           gsap.to(layer, { x: 0, y: 0, duration: 0.85, ease: EASE.luxe, overwrite: 'auto' }),

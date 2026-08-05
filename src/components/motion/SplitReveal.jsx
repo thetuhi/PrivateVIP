@@ -45,6 +45,19 @@ export default function SplitReveal({
   const ref = useRef(null)
   const { reduced } = useMotion()
 
+  // SplitText replaces the element's children with its own span structure and
+  // takes ownership of that DOM. React updating the text underneath it then has
+  // no visible effect, the already-split nodes simply stay on screen, which is
+  // what left headings stuck in the previous language after a language change
+  // while every unsplit string around them updated correctly.
+  //
+  // The text is therefore tracked explicitly. It keys the element, so React
+  // mounts a fresh node carrying the new text rather than trying to patch nodes
+  // SplitText owns, and it is a dependency, so the split is rebuilt against it.
+  // Reverting alone would not be enough: SplitText restores the markup it
+  // captured at split time, which is the *old* text.
+  const textKey = typeof children === 'string' || typeof children === 'number' ? String(children) : null
+
   useGSAP(
     () => {
       const el = ref.current
@@ -98,14 +111,14 @@ export default function SplitReveal({
         split.revert()
       }
     },
-    { scope: ref, dependencies: [reduced, type, scroll], revertOnUpdate: true },
+    { scope: ref, dependencies: [reduced, type, scroll, textKey], revertOnUpdate: true },
   )
 
   // will-change is deliberately absent: SplitText adds it per line while the
   // tween runs and removes it after. Declaring it in CSS would promote every
   // line to its own layer permanently and cost more memory than it saves.
   return (
-    <Tag ref={ref} className={className} {...rest}>
+    <Tag key={textKey} ref={ref} className={className} {...rest}>
       {children}
     </Tag>
   )

@@ -37,10 +37,25 @@ export default function Magnetic({
       const el = ref.current
       if (!el || !fine || reduced) return
 
-      const xTo = gsap.quickTo(el, 'x', { duration: 0.55, ease: EASE.precise })
-      const yTo = gsap.quickTo(el, 'y', { duration: 0.55, ease: EASE.precise })
+      // quickTo reuses one tween per property instead of allocating a new one
+      // on every mousemove. The catch is that the release tween below uses
+      // `overwrite: 'auto'`, which kills any other tween touching x or y, and
+      // that includes these. Calling a killed quickTo afterwards makes GSAP
+      // warn "x not eligible for reset", because there is no longer a
+      // PropTween for it to retarget.
+      //
+      // So the pair is built on entry and dropped on exit. Nothing ever calls a
+      // dead tween, and the visual behaviour is unchanged.
+      let xTo = null
+      let yTo = null
+
+      const onEnter = () => {
+        xTo = gsap.quickTo(el, 'x', { duration: 0.55, ease: EASE.precise })
+        yTo = gsap.quickTo(el, 'y', { duration: 0.55, ease: EASE.precise })
+      }
 
       const onMove = (e) => {
+        if (!xTo) onEnter()
         const rect = el.getBoundingClientRect()
         xTo((e.clientX - (rect.left + rect.width / 2)) * strength)
         yTo((e.clientY - (rect.top + rect.height / 2)) * strength)
@@ -48,15 +63,22 @@ export default function Magnetic({
 
       // Slower return than approach, with a little elasticity: the element is
       // being released, not pushed back.
-      const onLeave = () =>
+      const onLeave = () => {
+        xTo = null
+        yTo = null
         gsap.to(el, { x: 0, y: 0, duration: 0.9, ease: 'elastic.out(1, 0.45)', overwrite: 'auto' })
+      }
 
+      el.addEventListener('mouseenter', onEnter)
       el.addEventListener('mousemove', onMove)
       el.addEventListener('mouseleave', onLeave)
 
       return () => {
+        el.removeEventListener('mouseenter', onEnter)
         el.removeEventListener('mousemove', onMove)
         el.removeEventListener('mouseleave', onLeave)
+        xTo = null
+        yTo = null
         gsap.set(el, { x: 0, y: 0 })
       }
     },

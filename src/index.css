@@ -165,9 +165,20 @@
       active:scale-[0.98] active:bg-brass-600;
   }
 
+  /* The border is what makes a secondary button read as a button, so it has to
+     clear 3:1 against its background the way any meaningful UI boundary does.
+     It was ink-600, which measures 1.47:1 on both the flat surfaces and the
+     photographic ones: on the closing call-to-action, sitting over an image,
+     the outline effectively disappeared. brass-500 at 65% measures 3.92:1 and
+     stays quiet enough not to compete with the solid gold primary beside it.
+
+     The fill is for photography rather than contrast. The label was already at
+     13:1 over the worst-case bright patch; the surface is what stops the button
+     looking like floating text. On the flat sections it resolves to within a
+     shade of the section colour, so those keep the outline-only look. */
   .btn-secondary {
-    @apply btn border border-ink-600 bg-transparent text-bone
-      hover:border-brass-600 hover:bg-ink-850 hover:text-brass-300 active:scale-[0.98];
+    @apply btn border border-brass-500/65 bg-ink-950/55 text-bone
+      hover:border-brass-500 hover:bg-ink-850 hover:text-brass-300 active:scale-[0.98];
   }
 
   .btn-ghost {
