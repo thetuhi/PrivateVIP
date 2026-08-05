@@ -3,7 +3,7 @@ import { useGSAP } from '@gsap/react'
 import { gsap, EASE } from '../../motion/gsap'
 import { useMotion } from '../../motion/motionContext'
 import { getLenisInstance } from '../../motion/lenisStore'
-import { brand } from '../../config/brand'
+import Logo from '../Logo'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LoadingScreen
@@ -86,8 +86,12 @@ export default function LoadingScreen() {
       // wrong: at 0.035s across an 11-character wordmark it added 0.39s on its
       // own and pushed the whole intro to 2.14s. At 0.02 it still reads as a
       // sequence and costs 0.22s.
-      tl.to('[data-intro-mark]', { opacity: 1, duration: 0.28, ease: EASE.luxe }, 0)
-        .from('[data-intro-word] span', { yPercent: 110, duration: 0.42, stagger: 0.02, ease: EASE.luxe }, 0.12)
+      tl.fromTo(
+        '[data-intro-mark]',
+        { opacity: 0, y: 14 },
+        { opacity: 1, y: 0, duration: 0.62, ease: EASE.luxe },
+        0,
+      )
         .fromTo('[data-intro-rule]', { scaleX: 0 }, { scaleX: 1, duration: 0.38, ease: EASE.veil }, 0.45)
         .to('[data-intro-sub]', { opacity: 1, duration: 0.24 }, 0.58)
         .to('[data-intro-content]', { opacity: 0, y: -12, duration: 0.22, ease: EASE.luxe }, 0.88)
@@ -141,8 +145,6 @@ export default function LoadingScreen() {
 
   if (done) return null
 
-  const letters = brand.shortName.toUpperCase().split('')
-
   return (
     <div
       ref={rootRef}
@@ -155,39 +157,16 @@ export default function LoadingScreen() {
       <div data-intro-panel-bottom className="absolute inset-x-0 bottom-0 h-1/2 bg-ink-950" />
 
       <div data-intro-content className="absolute inset-0 flex flex-col items-center justify-center px-gutter">
-        <svg
-          data-intro-mark
-          viewBox="0 0 40 40"
-          className="h-10 w-10 text-brass-500 opacity-0"
-          aria-hidden="true"
-        >
-          <path
-            d="M20 3 L34 11.5 V28.5 L20 37 L6 28.5 V11.5 Z"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M15.5 12.5 h6.6 a4.9 4.9 0 0 1 0 9.8 H19 v5.2 h-3.5 Z M19 15.6 v3.6 h3.1 a1.8 1.8 0 0 0 0-3.6 Z"
-            fill="currentColor"
-          />
-        </svg>
-
-        <div data-intro-word className="mt-7 flex overflow-hidden">
-          {letters.map((letter, i) => (
-            <span
-              key={`${letter}-${i}`}
-              className="inline-block font-display text-3xl tracking-[0.3em] text-bone sm:text-4xl"
-            >
-              {letter === ' ' ? ' ' : letter}
-            </span>
-          ))}
+        {/* The real lockup, revealed rather than re-drawn. An earlier version
+            animated a hand-built monogram letter by letter, which was a second
+            logo the company does not own. */}
+        <div data-intro-mark className="opacity-0">
+          <Logo height={72} className="max-w-[70vw]" />
         </div>
 
-        <div data-intro-rule className="mt-6 h-px w-32 origin-left bg-brass-500" />
+        <div data-intro-rule className="mt-7 h-px w-28 origin-left bg-brass-500" />
 
-        <p data-intro-sub className="mt-6 text-eyebrow uppercase text-bone-muted opacity-0">
+        <p data-intro-sub className="mt-5 text-eyebrow uppercase text-bone-muted opacity-0">
           Istanbul
         </p>
       </div>

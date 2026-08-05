@@ -211,6 +211,30 @@
       aria-[invalid=true]:border-danger;
   }
 
+  /* ---- Relaxed field ---------------------------------------------------- */
+
+  /* A field that has stopped being load-bearing, currently the date pair once
+     "my dates are flexible" is on. It recedes rather than disables: the input
+     still works and the value is still sent, it just stops asking to be
+     filled in precisely.
+
+     Never the only signal. The required asterisk disappears, an "optional" tag
+     appears and the hint rewrites itself, so the state survives with colour
+     perception removed entirely. The label lands on bone-dim (10.9:1) and the
+     typed value stays full-strength bone, so nothing here costs legibility. */
+
+  .field-relaxed .field-label > span:first-child {
+    @apply text-bone-dim;
+  }
+
+  .field-relaxed .input {
+    @apply border-ink-700 bg-ink-850/60;
+  }
+
+  .field-relaxed .input:focus {
+    @apply border-brass-600 bg-ink-850;
+  }
+
   /* ---- Footer rows ------------------------------------------------------ */
 
   /* Footer columns hold four or five links each. At the 44px touch minimum

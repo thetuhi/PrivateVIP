@@ -8,11 +8,12 @@ import SectionHeading from '../components/SectionHeading'
 import Reveal from '../components/Reveal'
 import { getExperience } from '../data/experiences'
 import { localise } from '../utils/localise'
-import { whatsappLink, mailtoLink, bespokeMessage } from '../utils/contact'
+import { whatsappLink, telegramLink, mailtoLink, bespokeMessage } from '../utils/contact'
 import { trackEvent } from '../utils/analytics'
 import { useSeo } from '../utils/useSeo'
 import { EASE_ENTER, EASE_EXIT } from '../motion/presets'
 import WhatsAppGlyph from '../components/icons/WhatsAppGlyph'
+import TelegramGlyph from '../components/icons/TelegramGlyph'
 
 const DRAFT_KEY = 'pvi-bespoke-draft'
 const TOTAL_STEPS = 4
@@ -88,18 +89,27 @@ function restoreDraft({ searchParams, lang, t }) {
 
 // ---- Field primitives ------------------------------------------------------
 
-function Field({ id, label, hint, error, required, children }) {
+function Field({ id, label, hint, error, required, relaxed = false, children }) {
   const { t } = useTranslation()
   return (
-    <div>
-      <label htmlFor={id} className="field-label">
-        {label}
+    // `relaxed` recedes the field when it stops being load-bearing. It is
+    // never the only signal: the required asterisk disappears, an "optional"
+    // tag appears and the hint text changes, so the state is legible without
+    // perceiving the colour shift at all.
+    <div className={relaxed ? 'field-relaxed' : undefined}>
+      <label htmlFor={id} className="field-label flex items-center gap-2">
+        <span>{label}</span>
         {required && (
-          <span className="ml-1 text-brass-500" aria-hidden="true">
+          <span className="text-brass-500" aria-hidden="true">
             *
           </span>
         )}
         {required && <span className="sr-only"> ({t('common.required')})</span>}
+        {relaxed && (
+          <span className="rounded-full border border-ink-600 px-2 py-0.5 text-[0.625rem] font-normal uppercase tracking-[0.14em] text-bone-muted">
+            {t('common.optional')}
+          </span>
+        )}
       </label>
       {children}
       {/* Hint is persistent, not a placeholder, it stays readable while typing. */}
@@ -173,6 +183,9 @@ export default function Bespoke() {
   const [form, setForm] = useState(() => restoreDraft({ searchParams, lang, t }))
   const [errors, setErrors] = useState({})
   const [sent, setSent] = useState(false)
+  // null until a Telegram send; then true/false depending on whether the
+  // clipboard write was permitted, so the confirmation can tell the truth.
+  const [telegramCopied, setTelegramCopied] = useState(null)
 
   const summaryRef = useRef(null)
   const stepHeadingRef = useRef(null)
@@ -208,9 +221,15 @@ export default function Bespoke() {
     // Clear an error as soon as the visitor addresses it, leaving stale red
     // text under a now-valid field is the most common form-UX failure.
     setErrors((prev) => {
-      if (!prev[field]) return prev
+      // Turning on flexible dates makes arrival optional, so an outstanding
+      // "arrival required" error has to go with it. Leaving red text under a
+      // field the form no longer needs is the thing that makes a toggle feel
+      // like it did not take.
+      const clearArrival = field === 'flexible' && value === true && prev.arrival
+      if (!prev[field] && !clearArrival) return prev
       const next = { ...prev }
       delete next[field]
+      if (clearArrival) delete next.arrival
       return next
     })
   }
@@ -226,8 +245,15 @@ export default function Bespoke() {
     const found = {}
 
     if (fields.includes('arrival')) {
-      if (!data.arrival) found.arrival = t('bespoke.errors.arrivalRequired')
-      else if (data.arrival < todayIso()) found.arrival = t('bespoke.errors.arrivalPast')
+      // The flexible toggle has a real consequence, not a cosmetic one: with
+      // open dates the enquiry is perfectly actionable without an arrival date,
+      // so the field stops being required. Anything less would make the toggle
+      // decoration, which is exactly what it looked like before.
+      if (!data.arrival) {
+        if (!data.flexible) found.arrival = t('bespoke.errors.arrivalRequired')
+      } else if (data.arrival < todayIso()) {
+        found.arrival = t('bespoke.errors.arrivalPast')
+      }
     }
 
     if (fields.includes('adults')) {
@@ -297,11 +323,36 @@ export default function Bespoke() {
 
     trackEvent('enquiry_submit', { channel, services: form.services.join(',') })
 
+    // Telegram is the odd one out. WhatsApp and mailto both carry a prefilled
+    // body; Telegram's phone-number links accept no message parameter at all,
+    // so opening one would hand the visitor an empty chat and quietly lose
+    // every answer they just typed.
+    //
+    // Copying the enquiry to the clipboard first turns that into a paste
+    // instead of a retype, and the confirmation screen says so explicitly.
+    // Clipboard access can be refused, so the channel is only reported as
+    // copied once the write actually resolves.
+    if (channel === 'telegram') {
+      const open = (copied) => {
+        setTelegramCopied(copied)
+        window.open(telegramLink(), '_blank', 'noopener,noreferrer')
+        finishSend()
+      }
+      navigator.clipboard?.writeText(message).then(
+        () => open(true),
+        () => open(false),
+      ) ?? open(false)
+      return
+    }
+
     const href =
       channel === 'whatsapp' ? whatsappLink(message) : mailtoLink(`${t('bespoke.title')}, ${form.name}`, message)
 
     window.open(href, channel === 'whatsapp' ? '_blank' : '_self', 'noopener,noreferrer')
+    finishSend()
+  }
 
+  function finishSend() {
     try {
       localStorage.removeItem(DRAFT_KEY)
     } catch {
@@ -332,6 +383,22 @@ export default function Bespoke() {
             {t('bespoke.successTitle')}
           </h1>
           <p className="prose-body mt-5">{t('bespoke.successBody')}</p>
+
+          {/* Only shown after a Telegram send, and it says which of the two
+              things actually happened. Claiming the enquiry was copied when the
+              browser refused would leave someone staring at an empty chat with
+              nothing to paste. */}
+          {telegramCopied !== null && (
+            <p
+              className={`mt-4 max-w-prose rounded-card border p-4 text-sm font-light leading-relaxed ${
+                telegramCopied
+                  ? 'border-brass-700/60 bg-brass-500/5 text-brass-300'
+                  : 'border-danger/40 bg-danger/5 text-danger'
+              }`}
+            >
+              {telegramCopied ? t('bespoke.telegramCopied') : t('bespoke.telegramCopyFailed')}
+            </p>
+          )}
 
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <a href={whatsappLink(message)} target="_blank" rel="noopener noreferrer" className="btn-primary">
@@ -432,9 +499,10 @@ export default function Bespoke() {
                     <Field
                       id="arrival"
                       label={t('bespoke.fields.arrival')}
-                      hint={t('bespoke.fields.arrivalHint')}
+                      hint={form.flexible ? t('bespoke.fields.arrivalHintFlexible') : t('bespoke.fields.arrivalHint')}
                       error={errors.arrival}
-                      required
+                      required={!form.flexible}
+                      relaxed={form.flexible}
                     >
                       <input
                         id="arrival"
@@ -449,7 +517,12 @@ export default function Bespoke() {
                       />
                     </Field>
 
-                    <Field id="nights" label={t('bespoke.fields.nights')}>
+                    <Field
+                      id="nights"
+                      label={t('bespoke.fields.nights')}
+                      hint={form.flexible ? t('bespoke.fields.nightsHintFlexible') : undefined}
+                      relaxed={form.flexible}
+                    >
                       <input
                         id="nights"
                         name="nights"
@@ -459,19 +532,50 @@ export default function Bespoke() {
                         max="60"
                         value={form.nights}
                         onChange={(e) => update('nights', e.target.value)}
+                        aria-describedby={form.flexible ? 'nights-hint' : undefined}
                         className="input"
                       />
                     </Field>
 
-                    <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-bone-dim">
-                      <input
-                        type="checkbox"
-                        checked={form.flexible}
-                        onChange={(e) => update('flexible', e.target.checked)}
-                        className="h-5 w-5 cursor-pointer rounded-sm border-ink-600 bg-ink-850 text-brass-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-400"
-                      />
-                      {t('bespoke.fields.flexible')}
-                    </label>
+                    {/* The toggle is styled as a real control rather than a bare
+                        checkbox, because pressing it genuinely changes what the
+                        form asks for. */}
+                    <div>
+                      <label
+                        className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-card border px-4 text-sm transition-colors duration-base ease-enter has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brass-400 ${
+                          form.flexible
+                            ? 'border-brass-500 bg-brass-500/10 text-brass-300'
+                            : 'border-ink-600 text-bone-dim hover:border-brass-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={form.flexible}
+                          onChange={(e) => update('flexible', e.target.checked)}
+                          className="h-5 w-5 cursor-pointer rounded-sm border-ink-600 bg-ink-850 text-brass-500 focus-visible:outline-none"
+                        />
+                        {t('bespoke.fields.flexible')}
+                      </label>
+
+                      {/* States the consequence in words. Announced politely so a
+                          screen reader hears that the form changed without the
+                          focus being pulled out of the checkbox. */}
+                      <div aria-live="polite">
+                        <AnimatePresence initial={false}>
+                          {form.flexible && (
+                            <m.p
+                              initial={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                              animate={reduced ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
+                              exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                              transition={{ duration: reduced ? 0.15 : 0.32, ease: EASE_ENTER }}
+                              className="overflow-hidden text-sm font-light leading-relaxed text-brass-300/90"
+                            >
+                              <span className="block pt-3">{t('bespoke.fields.flexibleNote')}</span>
+                            </m.p>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -700,12 +804,16 @@ export default function Bespoke() {
                   <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                 </button>
               ) : (
-                <div className="flex flex-col gap-3 sm:order-2 sm:flex-row">
-                  <button type="submit" className="btn-primary">
+                <div className="grid gap-3 sm:order-2 sm:auto-cols-fr sm:grid-flow-col">
+                  <button type="submit" className="btn-primary whitespace-nowrap">
                     <WhatsAppGlyph className="h-4 w-4" aria-hidden="true" />
                     {t('bespoke.sendWhatsapp')}
                   </button>
-                  <button type="button" onClick={() => send('email')} className="btn-secondary">
+                  <button type="button" onClick={() => send('telegram')} className="btn-secondary whitespace-nowrap">
+                    <TelegramGlyph className="h-4 w-4" aria-hidden="true" />
+                    {t('bespoke.sendTelegram')}
+                  </button>
+                  <button type="button" onClick={() => send('email')} className="btn-secondary whitespace-nowrap">
                     <Mail className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                     {t('bespoke.sendEmail')}
                   </button>

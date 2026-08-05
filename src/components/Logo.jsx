@@ -1,45 +1,35 @@
 import { brand } from '../config/brand'
 
-/**
- * Wordmark. Drawn in type rather than shipped as an image so it stays crisp at
- * every size, recolours with the theme and costs nothing to load.
- *
- * ⚠ If the client has a real logo, replace the inner markup with an inline
- * SVG of the official asset, do not recolour or re-proportion a supplied one.
- */
-export default function Logo({ className = '', compact = false }) {
-  return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-    {/* Monogram mark, a hexagonal cartouche around a 'P'. */}
-      <svg
-        viewBox="0 0 40 40"
-        className="h-8 w-8 shrink-0 text-brass-500 transition-colors duration-base ease-enter"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <path
-          d="M20 3 L34 11.5 V28.5 L20 37 L6 28.5 V11.5 Z"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.25"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M15.5 12.5 h6.6 a4.9 4.9 0 0 1 0 9.8 H19 v5.2 h-3.5 Z M19 15.6 v3.6 h3.1 a1.8 1.8 0 0 0 0-3.6 Z"
-          fill="currentColor"
-        />
-      </svg>
+// Intrinsic size of public/images/brand/logo.webp, produced by
+// `npm run logo -- <source>`. Declared here so width and height can be set on
+// the element: the box is correct before the file arrives, and the header never
+// reflows around a logo that pops into place.
+const RATIO = 560 / 219
 
-      {!compact && (
-        <span className="flex flex-col leading-none">
-          <span className="font-display text-lg tracking-[0.16em] text-bone">
-            {brand.shortName.toUpperCase()}
-          </span>
-          <span className="mt-0.5 font-sans text-[0.5625rem] font-medium tracking-[0.34em] text-brass-500">
-            ISTANBUL
-          </span>
-        </span>
-      )}
-    </span>
+/**
+ * The company lockup: plane, wordmark and strapline as one horizontal unit.
+ *
+ * Sized by height, because that is the constraint everywhere it appears, the
+ * header bar, a drawer row, a footer column. At 2.56:1 a 36px height renders
+ * 92px wide.
+ *
+ * ⚠ Supplied brand asset. Do not recolour it, do not stretch it, and do not
+ * rebuild it in type. To change it, replace the source and re-run the script.
+ */
+export default function Logo({ className = '', compact = false, height }) {
+  const h = height ?? (compact ? 30 : 36)
+
+  return (
+    <img
+      src="/images/brand/logo.webp"
+      alt={brand.name}
+      width={Math.round(h * RATIO)}
+      height={h}
+      style={{ height: h }}
+      // Present in the header on every page, above the fold, so never lazy.
+      loading="eager"
+      decoding="async"
+      className={`block w-auto max-w-full select-none ${className}`}
+    />
   )
 }
