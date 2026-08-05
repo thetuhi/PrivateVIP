@@ -31,9 +31,12 @@ export const brand = {
     phone: '+90 543 354 23 35',
     phoneHref: '+905433542335',
     email: 'reservations@privatevipistanbul.com', // TODO
-    // Telegram is reachable by phone number when no @username is set. Swap this
-    // for a username (without the @) if one is registered later.
-    telegram: '+905433542335',
+    // A username, without the @. This is load-bearing, not cosmetic: Telegram
+    // honours `?text=` only on t.me/<username> links. On a t.me/+<phone> link
+    // the parameter is dropped and the visitor lands in an empty chat with the
+    // enquiry they just filled in gone. Replacing this with a number would
+    // silently take the prefilled message away again.
+    telegram: 'KAMA_0700',
   },
 
   office: {
