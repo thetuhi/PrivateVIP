@@ -37,17 +37,16 @@ export default function Footer() {
     legalPrivacy: { en: 'Privacy', ru: 'Конфиденциальность', tr: 'Gizlilik' },
   }
 
-  const contactLinkClass =
-    'inline-flex min-h-11 items-center gap-2.5 text-sm text-bone-dim transition-colors duration-micro ease-enter hover:text-brass-400'
+  const contactLinkClass = 'footer-row text-bone-dim hover:text-brass-400'
 
   return (
     <footer className="relative border-t border-ink-700 bg-ink-950">
-      <div className="shell py-16 lg:py-20">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
+      <div className="shell py-12 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
           {/* Identity */}
           <div className="lg:col-span-4">
             <Logo />
-            <p className="prose-body mt-5 max-w-xs text-sm">{t('footer.tagline')}</p>
+            <p className="prose-body mt-4 max-w-xs text-sm">{t('footer.tagline')}</p>
 
             {brand.social.instagram && (
               <a
@@ -55,7 +54,7 @@ export default function Footer() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="mt-5 inline-flex h-11 w-11 items-center justify-center rounded-card border border-ink-700 text-bone-dim transition-colors duration-micro ease-enter hover:border-brass-600 hover:text-brass-400"
+                className="mt-4 inline-flex h-10 w-10 items-center justify-center rounded-card border border-ink-700 text-bone-dim transition-colors duration-micro ease-enter hover:border-brass-600 hover:text-brass-400"
               >
                 <InstagramGlyph className="h-4 w-4" />
               </a>
@@ -64,13 +63,13 @@ export default function Footer() {
 
           {/* Link columns */}
           <nav aria-label={t('footer.explore')} className="lg:col-span-2">
-            <h2 className="eyebrow mb-4">{t('footer.explore')}</h2>
+            <h2 className="eyebrow mb-3">{t('footer.explore')}</h2>
             <ul className="flex flex-col">
               {EXPLORE.map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    className="flex min-h-11 items-center text-sm text-bone-dim transition-colors duration-micro ease-enter hover:text-brass-400"
+                    className="footer-row text-bone-dim hover:text-brass-400"
                   >
                     {t(item.key)}
                   </Link>
@@ -80,13 +79,13 @@ export default function Footer() {
           </nav>
 
           <nav aria-label={t('footer.company')} className="lg:col-span-2">
-            <h2 className="eyebrow mb-4">{t('footer.company')}</h2>
+            <h2 className="eyebrow mb-3">{t('footer.company')}</h2>
             <ul className="flex flex-col">
               {COMPANY.map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    className="flex min-h-11 items-center text-sm text-bone-dim transition-colors duration-micro ease-enter hover:text-brass-400"
+                    className="footer-row text-bone-dim hover:text-brass-400"
                   >
                     {t(item.key)}
                   </Link>
@@ -96,7 +95,7 @@ export default function Footer() {
                 <li key={item.to}>
                   <Link
                     to={item.to}
-                    className="flex min-h-11 items-center text-sm text-bone-muted transition-colors duration-micro ease-enter hover:text-brass-400"
+                    className="footer-row text-bone-muted hover:text-brass-400"
                   >
                     {legalLabels[item.key][lang] ?? legalLabels[item.key].en}
                   </Link>
@@ -107,7 +106,7 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="lg:col-span-4">
-            <h2 className="eyebrow mb-4">{t('footer.contactHeading')}</h2>
+            <h2 className="eyebrow mb-3">{t('footer.contactHeading')}</h2>
             <ul className="flex flex-col">
               <li>
                 <a
@@ -156,7 +155,7 @@ export default function Footer() {
                   href={mapsLink()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${contactLinkClass} items-start py-2.5`}
+                  className={`${contactLinkClass} items-start`}
                 >
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
                   <span className="not-italic">{fullAddress}</span>
@@ -166,18 +165,18 @@ export default function Footer() {
 
             {/* Hours live in brand.js, not the locale files, they are company
                 data, not interface copy, and change without a code release. */}
-            <p className="mt-4 text-sm text-bone-muted">{localise(brand.hours, lang)}</p>
+            <p className="mt-3 text-sm text-bone-muted">{localise(brand.hours, lang)}</p>
           </div>
         </div>
 
-        <hr className="rule my-10" />
+        <hr className="rule my-8" />
 
         <div className="flex flex-col gap-3 text-sm text-bone-muted md:flex-row md:items-center md:justify-between">
           <p>{t('footer.rights', { year: new Date().getFullYear(), name: brand.legalName })}</p>
           <p>{t('footer.licence', { number: brand.tursabNumber })}</p>
         </div>
 
-        <p className="mt-3 max-w-prose text-xs text-bone-muted/80">{t('footer.builtNote')}</p>
+        <p className="mt-2 max-w-prose text-xs text-bone-muted/80">{t('footer.builtNote')}</p>
       </div>
     </footer>
   )

@@ -211,6 +211,29 @@
       aria-[invalid=true]:border-danger;
   }
 
+  /* ---- Footer rows ------------------------------------------------------ */
+
+  /* Footer columns hold four or five links each. At the 44px touch minimum
+     that is 220px of column before any content, which is what made the footer
+     read as bloated.
+
+     The 44px floor exists for fingers, so it is kept for fingers and relaxed
+     for pointers. `(pointer: fine)` is the honest query here rather than a
+     width breakpoint: a touchscreen laptop is wide but still needs the big
+     target, and a phone in landscape is wide and still has no mouse. */
+
+  .footer-row {
+    @apply flex min-h-11 items-center gap-2.5 text-sm
+      transition-colors duration-micro ease-enter;
+  }
+
+  @media (pointer: fine) {
+    .footer-row {
+      min-height: 0;
+      padding-block: 0.3125rem;
+    }
+  }
+
   /* ---- Links ----------------------------------------------------------- */
 
   /* Underline grows from the left on hover; uses transform, so no reflow. */
