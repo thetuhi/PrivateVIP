@@ -9,7 +9,6 @@ import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import CookieBanner from './components/CookieBanner'
 import RouteErrorBoundary from './components/RouteErrorBoundary'
-import Cursor from './components/motion/Cursor'
 import LoadingScreen from './components/motion/LoadingScreen'
 import PageTransition from './components/motion/PageTransition'
 import { trackPageView } from './utils/analytics'
@@ -70,7 +69,6 @@ function Shell() {
 
       <LoadingScreen />
       <PageTransition />
-      <Cursor />
 
       <ScrollToTop />
       <Navbar />

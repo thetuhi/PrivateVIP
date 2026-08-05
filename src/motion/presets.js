@@ -111,3 +111,15 @@ export function stillVariant(variant) {
 
 /** Shared viewport config: fire once, slightly before the element is centred. */
 export const viewportOnce = { once: true, amount: 0.2, margin: '0px 0px -80px 0px' }
+
+/**
+ * For blocks taller than a comfortable fraction of the viewport: yacht rows,
+ * stacked feature panels.
+ *
+ * `amount: 0.2` asks for a fifth of the element to be on screen, which on a
+ * 650px row is 130px of scrolling after it first appears, and the positive
+ * bottom margin below turns that into a head start instead. The element begins
+ * revealing 200px before it enters, so by the time it is actually looked at the
+ * animation has already resolved rather than starting under the reader.
+ */
+export const viewportEarly = { once: true, amount: 0.01, margin: '0px 0px 200px 0px' }

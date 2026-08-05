@@ -4,8 +4,9 @@ import { Phone, Mail, MapPin, Clock, ArrowRight, ExternalLink } from 'lucide-rea
 
 import SectionHeading from '../components/SectionHeading'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
+import MapCard from '../components/MapCard'
 import { brand, fullAddress } from '../config/brand'
-import { whatsappLink, telegramLink, phoneLink, mailtoLink, mapsLink } from '../utils/contact'
+import { whatsappLink, telegramLink, phoneLink, mailtoLink } from '../utils/contact'
 import { localise } from '../utils/localise'
 import { trackEvent } from '../utils/analytics'
 import { useSeo } from '../utils/useSeo'
@@ -109,17 +110,18 @@ export default function Contact() {
               <MapPin className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
               {t('contact.officeTitle')}
             </h2>
+            {/* Kept at display size. It is the only physical address on the
+                site, and it balances the hours column opposite, which sets its
+                one line at the same weight. */}
             <address className="mt-5 font-display text-3xl not-italic leading-tight text-bone">{fullAddress}</address>
             <p className="prose-body mt-4">{t('contact.officeBody')}</p>
-            <a
-              href={mapsLink()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary mt-7"
-            >
-              {t('contact.openInMaps')}
-              <ExternalLink className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-            </a>
+
+            {/* Was a lone secondary button under a line of text, which is the
+                weakest thing this section could have offered: the one place on
+                the site with a physical address, answered with a link. MapCard
+                carries the address, the district and a drawn map, and is itself
+                the link, so the whole block is the invitation. */}
+            <MapCard label={t('contact.openInMaps')} />
           </Reveal>
 
           <Reveal>
