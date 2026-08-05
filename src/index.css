@@ -185,6 +185,79 @@
     @apply btn px-2 text-bone-dim hover:text-brass-400 active:scale-[0.98];
   }
 
+  /* ---- Primary CTA, mobile ---------------------------------------------- */
+
+  /* Below sm this button gets its own treatment. Above it, nothing here
+     applies and the desktop button is untouched.
+
+     A phone gives the primary action one job and the full width to do it in, so
+     it stops being a chip floating in a column and becomes the base of the
+     screen. The restraint is deliberate: it is taller and wider but the type
+     stays the same size, so it gains weight without shouting. */
+
+  .cta-primary {
+    @apply relative overflow-hidden;
+    /* Suppresses the grey flash Android paints over a tapped link, which would
+       otherwise fight the press animation below. */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 639px) {
+    .cta-primary {
+      width: 100%;
+      min-height: 3.5rem; /* 56px, comfortably past the 44px floor */
+      border-radius: 4px;
+      padding-inline: 1.5rem;
+      justify-content: space-between;
+      letter-spacing: 0.015em;
+      /* Grounds the button against the page rather than letting it float. */
+      box-shadow: 0 1px 0 0 theme('colors.brass.300') inset, 0 10px 24px -12px rgb(192 160 98 / 0.45);
+    }
+
+    /* Press: the surface settles by a hair and the shadow tightens, the way a
+       physical key does. 0.985 is deliberately small; a button that visibly
+       shrinks reads as a toy. */
+    .cta-primary:active {
+      transform: scale(0.985);
+      box-shadow: 0 1px 0 0 theme('colors.brass.300') inset, 0 4px 12px -10px rgb(192 160 98 / 0.5);
+    }
+
+    /* A single light sweep on press, instead of an arrow that just sits there.
+       It runs on :active and resets instantly off-screen on release, so the
+       gesture is acknowledged once rather than looping like a banner. */
+    .cta-shine {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transform: translateX(-130%) skewX(-18deg);
+      background: linear-gradient(90deg, transparent, rgb(255 252 245 / 0.55), transparent);
+      width: 45%;
+      transition: transform 0s;
+    }
+
+    .cta-primary:active .cta-shine {
+      transform: translateX(330%) skewX(-18deg);
+      transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* The chevron leans into the press and returns. Replaces the static arrow. */
+    .cta-chevron {
+      transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .cta-primary:active .cta-chevron {
+      transform: translateX(4px);
+    }
+  }
+
+  /* The sweep is decoration, so it does not run for anyone who asked for less
+     motion; the press scale is small enough to keep as feedback. */
+  @media (prefers-reduced-motion: reduce) {
+    .cta-shine {
+      display: none;
+    }
+  }
+
   /* ---- Surfaces -------------------------------------------------------- */
 
   .card {

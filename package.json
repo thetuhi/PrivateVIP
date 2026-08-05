@@ -13,7 +13,9 @@
     "sitemap": "node scripts/generate-sitemap.mjs",
     "mock-images": "node scripts/mock-images.mjs",
     "fonts": "node scripts/fetch-fonts.mjs",
-    "logo": "node scripts/build-logo.mjs"
+    "logo": "node scripts/build-logo.mjs",
+    "photos:fetch": "node scripts/fetch-photos.mjs",
+    "images:responsive": "node scripts/responsive-images.mjs"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",

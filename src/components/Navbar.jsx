@@ -9,6 +9,7 @@ import { useMotion } from '../motion/motionContext'
 import Magnetic from './motion/Magnetic'
 import { drawer, scrim } from '../motion/presets'
 import MessageChannels from './MessageChannels'
+import PrimaryCta from './PrimaryCta'
 
 const LINKS = [
   { to: '/experiences', key: 'nav.experiences' },
@@ -298,9 +299,7 @@ export default function Navbar() {
                 className="flex flex-col gap-2.5 border-t border-ink-700 px-6 pt-5"
                 style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom))' }}
               >
-                <Link to="/plan" className="btn-primary w-full">
-                  {t('nav.bespoke')}
-                </Link>
+                <PrimaryCta to="/plan">{t('nav.bespoke')}</PrimaryCta>
                 <MessageChannels location="mobile_nav" block />
               </div>
             </m.div>

@@ -10,6 +10,7 @@ import SectionHeading from '../components/SectionHeading'
 import ExperienceCard from '../components/ExperienceCard'
 import SplitReveal from '../components/motion/SplitReveal'
 import Magnetic from '../components/motion/Magnetic'
+import PrimaryCta from '../components/PrimaryCta'
 import TiltCard from '../components/motion/TiltCard'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
 import { featuredExperiences } from '../data/experiences'
@@ -193,14 +194,7 @@ function Hero() {
           data-hero-fade
           className="mt-10 flex translate-y-[18px] flex-col gap-3 opacity-0 sm:flex-row sm:items-center"
         >
-          <Magnetic as={Link} to="/plan" className="btn-primary group">
-            {t('home.heroCta')}
-            <ArrowRight
-              className="h-4 w-4 transition-transform duration-base ease-enter group-hover:translate-x-1 motion-reduce:transform-none"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-          </Magnetic>
+          <PrimaryCta to="/plan">{t('home.heroCta')}</PrimaryCta>
           <Magnetic as={Link} strength={0.2} to="/experiences" className="btn-secondary">
             {t('home.heroSecondary')}
           </Magnetic>
@@ -454,14 +448,7 @@ function FinalCta() {
         </Reveal>
         <Reveal className="mt-10">
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Magnetic as={Link} to="/plan" className="btn-primary group">
-              {t('home.ctaPrimary')}
-              <ArrowRight
-                className="h-4 w-4 transition-transform duration-base ease-enter group-hover:translate-x-1 motion-reduce:transform-none"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-            </Magnetic>
+            <PrimaryCta to="/plan">{t('home.ctaPrimary')}</PrimaryCta>
             <MessageChannels location="home_cta" />
           </div>
         </Reveal>

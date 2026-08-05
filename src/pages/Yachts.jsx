@@ -6,6 +6,7 @@ import { Ruler, Users, BedDouble, Anchor, Check, ArrowRight, Expand } from 'luci
 import ScrollImage from '../components/motion/ScrollImage'
 import SplitReveal from '../components/motion/SplitReveal'
 import Magnetic from '../components/motion/Magnetic'
+import PrimaryCta from '../components/PrimaryCta'
 import SectionHeading from '../components/SectionHeading'
 import Lightbox from '../components/Lightbox'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
@@ -194,14 +195,7 @@ export default function Yachts() {
             <p className="prose-body mt-4">{t('yachts.ctaBody')}</p>
           </Reveal>
           <Reveal className="shrink-0">
-            <Magnetic as={Link} to="/plan" className="btn-primary group">
-              {t('nav.bespoke')}
-              <ArrowRight
-                className="h-4 w-4 transition-transform duration-base ease-enter group-hover:translate-x-1 motion-reduce:transform-none"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-            </Magnetic>
+            <PrimaryCta to="/plan">{t('nav.bespoke')}</PrimaryCta>
           </Reveal>
         </div>
       </section>

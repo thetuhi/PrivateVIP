@@ -4,6 +4,7 @@ import { PlaneLanding, UserRoundCheck, BadgeEuro, Baby, Users, Briefcase, ArrowR
 
 import SmartImage from '../components/SmartImage'
 import SectionHeading from '../components/SectionHeading'
+import PrimaryCta from '../components/PrimaryCta'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
 import { vehicles, transferRates, transferPromises } from '../data/fleet'
 import { localise, formatPrice } from '../utils/localise'
@@ -213,10 +214,7 @@ export default function Fleet() {
           </Reveal>
           <Reveal className="shrink-0">
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link to="/plan" className="btn-primary">
-                {t('nav.bespoke')}
-                <ArrowRight className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-              </Link>
+            <PrimaryCta to="/plan">{t('nav.bespoke')}</PrimaryCta>
               <MessageChannels location="fleet_cta" />
             </div>
           </Reveal>

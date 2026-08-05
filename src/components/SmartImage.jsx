@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+
+// Must match WIDTHS in scripts/responsive-images.mjs.
+const VARIANT_WIDTHS = [640, 1024, 1600]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SmartImage
@@ -91,19 +94,72 @@ export default function SmartImage({
   children,
 }) {
   const [state, setState] = useState('loading') // loading | loaded | failed
+  // Priority images are wanted immediately, and so is anything running without
+  // IntersectionObserver, where the alternative is never loading at all. That
+  // decision belongs in the initial state rather than in the effect: setting it
+  // synchronously from an effect body costs an extra render pass on every
+  // image on the page.
+  const [shouldLoad, setShouldLoad] = useState(
+    () => priority || typeof IntersectionObserver === 'undefined',
+  )
+  const frameRef = useRef(null)
   const seed = src || alt || 'placeholder'
   const box = fill ? 'absolute inset-0 h-full w-full' : `relative ${aspect}`
 
+  // Responsive variants written by `npm run images:responsive`, named
+  // <file>-<width>w.webp beside the original.
+  //
+  // Without these the browser had one file to choose from and downloaded the
+  // full-size frame for a 330px card, which is why photographs were still
+  // arriving after they had scrolled into view. `sizes` was already correct at
+  // every call site; it simply had nothing to select between.
+  //
+  // The original stays as `src`, so anything that cannot parse a srcset still
+  // gets a working image, and a missing variant degrades to it rather than to
+  // a broken picture.
+  const srcSet = src && src.endsWith('.webp')
+    ? VARIANT_WIDTHS.map((w) => `${src.replace(/\.webp$/, `-${w}w.webp`)} ${w}w`).join(', ')
+    : undefined
+
+  // Loading is started 1200px before the frame reaches the viewport, rather
+  // than left to `loading="lazy"`.
+  //
+  // Native lazy loading picks its own distance and the browsers disagree about
+  // it: Chrome varies the threshold with connection speed, Safari is stingier
+  // still. That is why photographs were arriving after they had already
+  // scrolled into view. An explicit rootMargin behaves the same everywhere and
+  // is roughly a viewport and a half of warning at this page's scroll speed.
+  useEffect(() => {
+    if (shouldLoad) return undefined
+    const el = frameRef.current
+    if (!el) return undefined
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setShouldLoad(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '1200px 0px' },
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [shouldLoad])
+
   return (
-    <div className={`overflow-hidden bg-ink-850 ${box} ${className}`} style={placeholderStyle(seed)}>
+    <div ref={frameRef} className={`overflow-hidden bg-ink-850 ${box} ${className}`} style={placeholderStyle(seed)}>
       <PlaceholderMotif seed={seed} />
 
-      {src && state !== 'failed' && (
+      {src && shouldLoad && state !== 'failed' && (
         <img
           src={src}
+          srcSet={srcSet}
           alt={alt}
           sizes={sizes}
-          loading={priority ? 'eager' : 'lazy'}
+          // The observer above already decided the timing, so the browser is
+          // told to get on with it rather than applying its own heuristic.
+          loading="eager"
           // fetchPriority is React 19's camelCase form of the fetchpriority attr.
           fetchPriority={priority ? 'high' : 'auto'}
           decoding={priority ? 'sync' : 'async'}
