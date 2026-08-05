@@ -7,7 +7,7 @@ export default defineConfig({
     // Keep the vendor layer out of the route chunks so a content edit does not
     // invalidate the framework cache for returning visitors.
     //
-    // Vite 8 bundles with rolldown, which requires the function form here —
+    // Vite 8 bundles with rolldown, which requires the function form here,
     // the object form is silently rejected at config time and then throws.
     rollupOptions: {
       output: {

@@ -1,4 +1,4 @@
 # Netlify / Cloudflare Pages SPA fallback.
 # Without this, a hard refresh on /experiences/imperial-istanbul returns a 404
-# because no such file exists on disk — the router resolves it client-side.
+# because no such file exists on disk, the router resolves it client-side.
 /*    /index.html   200

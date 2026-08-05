@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 
-// NOCTURNE — the single source of truth for the Private VIP Istanbul palette.
+// NOCTURNE, the single source of truth for the Private VIP Istanbul palette.
 // Every value here is verified against WCAG on the ink-900 surface; see
 // design-system/MASTER.md for the measured contrast ratios.
 export default {
@@ -18,7 +18,7 @@ export default {
     },
     extend: {
       colors: {
-        // Surfaces — warm blacks, never pure #000 (it smears on OLED and
+        // Surfaces, warm blacks, never pure #000 (it smears on OLED and
         // reads cheap next to warm photography).
         ink: {
           950: '#0B0A09', // page base
@@ -28,7 +28,7 @@ export default {
           700: '#24211C', // card hover / strong border
           600: '#332E27', // divider on raised surface
         },
-        // Brass — the single accent. 7.7:1 on ink-900, so it is safe for
+        // Brass, the single accent. 7.7:1 on ink-900, so it is safe for
         // body-size text, not just large display type.
         brass: {
           300: '#E3D2AE',
@@ -39,15 +39,15 @@ export default {
         },
         // Foreground ramp, warm to sit with the brass rather than fight it.
         bone: {
-          DEFAULT: '#F5F1EA', // 17.1:1 — primary text
-          dim: '#C9C2B6', //  10.9:1 — secondary text
-          muted: '#8E877C', //  5.4:1 — tertiary text, still AA
+          DEFAULT: '#F5F1EA', // 17.1:1, primary text
+          dim: '#C9C2B6', //  10.9:1, secondary text
+          muted: '#8E877C', //  5.4:1, tertiary text, still AA
         },
         danger: '#F87171', // 6.1:1 on ink-900
         success: '#6EE7A8', // 11.4:1 on ink-900
       },
       fontFamily: {
-        // Cormorant carries display sizes only — its thin strokes disappear
+        // Cormorant carries display sizes only, its thin strokes disappear
         // below ~28px on a dark background.
         display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
