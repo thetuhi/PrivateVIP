@@ -379,10 +379,11 @@ export default function ExperienceDetail() {
                       reveal={index % 2 === 0 ? 'up' : 'down'}
                       imgClassName="transition-transform duration-[900ms] ease-enter group-hover:scale-[1.07] motion-reduce:transform-none"
                     />
-                    {/* The magnifier is a fallback affordance: on desktop the
-                        custom cursor already says "gallery", but touch and
-                        keyboard users get nothing from that. */}
-                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink-950/0 opacity-0 transition-all duration-base ease-enter group-hover:bg-ink-950/40 group-hover:opacity-100 group-focus-visible:bg-ink-950/40 group-focus-visible:opacity-100 lg:group-hover:opacity-0">
+                    {/* The magnifier is the affordance, on every input. It was
+                        hidden on desktop hover while the custom cursor said
+                        "gallery" by itself; that cursor is gone, so hiding it
+                        would leave a mouse user with no signal at all. */}
+                    <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-ink-950/0 opacity-0 transition-all duration-base ease-enter group-hover:bg-ink-950/40 group-hover:opacity-100 group-focus-visible:bg-ink-950/40 group-focus-visible:opacity-100">
                       <Expand className="h-6 w-6 text-bone" strokeWidth={1.5} aria-hidden="true" />
                     </span>
                   </button>

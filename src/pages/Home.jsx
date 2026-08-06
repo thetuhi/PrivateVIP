@@ -367,37 +367,46 @@ function Services() {
             <TiltCard as="li" key={key} className="group relative flex flex-col" max={3.5} lift={14}>
               {/* Cards are the one place tilt earns its keep: a grid of flat
                   rectangles is what separates a template from a designed page. */}
-              <ScrollImage
-                src={image}
-                alt={t(`services.${key}Title`)}
-                aspect="aspect-[3/2]"
-                sizes="(min-width: 768px) 33vw, 92vw"
-                className="rounded-card"
-                parallax={8}
-                imgClassName="transition-transform duration-[1100ms] ease-enter group-hover:scale-[1.07] motion-reduce:transform-none"
+              {/* The link wraps the card rather than the heading. A stretched
+                  `after:inset-0` on the heading resolves against the nearest
+                  transformed ancestor, and the [data-depth] layer below is
+                  transformed by TiltCard, so the hit area used to shrink to the
+                  title as soon as the tilt armed. See ExperienceCard. */}
+              <Link
+                to={to}
+                aria-label={t(`services.${key}Title`)}
+                className="flex h-full flex-col"
               >
-                <div className="pointer-events-none absolute inset-0 scrim-b" aria-hidden="true" />
-              </ScrollImage>
+                <ScrollImage
+                  src={image}
+                  alt=""
+                  aspect="aspect-[3/2]"
+                  sizes="(min-width: 768px) 33vw, 92vw"
+                  className="rounded-card"
+                  parallax={8}
+                  imgClassName="transition-transform duration-[1100ms] ease-enter group-hover:scale-[1.07] motion-reduce:transform-none"
+                >
+                  <div className="pointer-events-none absolute inset-0 scrim-b" aria-hidden="true" />
+                </ScrollImage>
 
-              <div className="flex flex-1 flex-col pt-5" data-depth="0.5">
-                <Icon className="h-5 w-5 text-brass-500" strokeWidth={1.25} aria-hidden="true" />
-                <h3 className="mt-4 font-display text-2xl leading-tight text-bone transition-colors duration-base ease-enter group-hover:text-brass-300">
-                  <Link to={to} className="after:absolute after:inset-0 after:content-['']">
+                <div className="flex flex-1 flex-col pt-5" data-depth="0.5">
+                  <Icon className="h-5 w-5 text-brass-500" strokeWidth={1.25} aria-hidden="true" />
+                  <h3 className="mt-4 font-display text-2xl leading-tight text-bone transition-colors duration-base ease-enter group-hover:text-brass-300">
                     {t(`services.${key}Title`)}
-                  </Link>
-                </h3>
-                <p className="mt-2.5 flex-1 text-sm font-light leading-relaxed text-bone-dim">
-                  {t(`services.${key}Body`)}
-                </p>
-                <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-brass-400">
-                  {t(`services.${key}Cta`)}
-                  <ArrowRight
-                    className="h-4 w-4 transition-transform duration-base ease-enter group-hover:translate-x-1 motion-reduce:transform-none"
-                    strokeWidth={1.5}
-                    aria-hidden="true"
-                  />
-                </span>
-              </div>
+                  </h3>
+                  <p className="mt-2.5 flex-1 text-sm font-light leading-relaxed text-bone-dim">
+                    {t(`services.${key}Body`)}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-brass-400">
+                    {t(`services.${key}Cta`)}
+                    <ArrowRight
+                      className="h-4 w-4 transition-transform duration-base ease-enter group-hover:translate-x-1 motion-reduce:transform-none"
+                      strokeWidth={1.5}
+                      aria-hidden="true"
+                    />
+                  </span>
+                </div>
+              </Link>
             </TiltCard>
           ))}
         </ul>

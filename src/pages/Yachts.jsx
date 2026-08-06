@@ -67,7 +67,11 @@ function YachtRow({ yacht, index, onOpenGallery }) {
             reveal={reversed ? 'right' : 'left'}
             imgClassName="transition-transform duration-[1100ms] ease-enter group-hover:scale-[1.05] motion-reduce:transform-none"
           />
-          <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-base ease-enter group-hover:bg-ink-950/35 group-hover:opacity-100 group-focus-visible:bg-ink-950/35 group-focus-visible:opacity-100 lg:group-hover:opacity-0">
+          {/* Shown on desktop hover too. It used to be suppressed there,
+              because the custom cursor said "gallery" on its own; the pointer
+              is the plain system hand now, so this is the only thing telling
+              a mouse user the image opens. */}
+          <span className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-base ease-enter group-hover:bg-ink-950/35 group-hover:opacity-100 group-focus-visible:bg-ink-950/35 group-focus-visible:opacity-100">
             <Expand className="h-6 w-6 text-bone" strokeWidth={1.5} aria-hidden="true" />
           </span>
         </button>
