@@ -35,9 +35,15 @@ const EMPTY_FORM = {
   arrival: '',
   nights: '',
   flexible: false,
+  // Three age bands, because a guide, a car and a boat all price and seat them
+  // differently: infants 0-1, children 2-11, adults 12 and over.
   adults: '2',
   children: '0',
-  childrenAges: '',
+  infants: '0',
+  // Asked instead of each child's age. A seat is the only thing the ages were
+  // ever used for, and one yes/no gets it without making a parent itemise
+  // their family to a form.
+  childSeat: false,
   services: [],
   interests: [],
   pace: '',
@@ -53,18 +59,27 @@ const EMPTY_FORM = {
 }
 
 /**
- * Hard bounds for the three count fields. Enforced in three places that have to
- * agree: the keystroke filter (digits only, so "-2" cannot be typed), the blur
- * clamp, and validate() for anything pasted or restored from an old draft.
+ * Hard bounds for the count fields.
  *
- * The maxima are the point where an enquiry stops being an enquiry and becomes
- * a coach tour, which is not what this company sells.
+ * The head counts are chosen from a list rather than typed. A party of six is
+ * the ceiling this company actually sells against, so the range is short enough
+ * to read at a glance, and picking from it makes every invalid value
+ * unreachable rather than merely rejected: no minus sign, no 1e5, no 3.5, no
+ * empty string, nothing to clamp on blur. Anyone larger is told to write to us,
+ * which is the honest answer for a private tour.
+ *
+ * Nights stays typed. It has sixty valid values and no visitor wants to scroll
+ * a sixty-item menu to say "four".
  */
 const LIMITS = {
   nights: { min: 1, max: 60 },
-  adults: { min: 1, max: 30 },
-  children: { min: 0, max: 20 },
+  adults: { min: 1, max: 6 },
+  children: { min: 0, max: 6 },
+  infants: { min: 0, max: 6 },
 }
+
+/** The three head counts, in the order they are asked. */
+const PARTY_FIELDS = ['adults', 'children', 'infants']
 
 /** Digits only. Strips the minus, the "e" and the decimal point outright. */
 function digitsOnly(value) {
@@ -79,10 +94,16 @@ function clampCount(value, field) {
   return String(Math.min(Math.max(Number(digits), min), max))
 }
 
+/** Inclusive [min..max] as strings, for a select's options. */
+function countOptions(field) {
+  const { min, max } = LIMITS[field]
+  return Array.from({ length: max - min + 1 }, (_, i) => String(min + i))
+}
+
 /** Which fields belong to which step, so validation can run per step. */
 const STEP_FIELDS = {
   1: ['arrival', 'nights'],
-  2: ['adults', 'children'],
+  2: PARTY_FIELDS,
   3: [],
   4: ['name', 'contact', 'consent'],
 }
@@ -122,6 +143,15 @@ function restoreDraft({ searchParams, lang, t }) {
       }
     }
   }
+
+  // A draft saved before the head counts became menus can hold a number the
+  // menu has no option for, and a <select> whose value matches no option
+  // renders blank. Clamping here keeps an old draft loadable instead of
+  // greeting its owner with three empty fields.
+  restored = PARTY_FIELDS.reduce(
+    (acc, field) => ({ ...acc, [field]: clampCount(acc[field], field) || String(LIMITS[field].min) }),
+    restored,
+  )
 
   // The dialling code is guessed once, here, rather than inside the picker, so
   // the form state stays the single source of truth and a restored draft keeps
@@ -261,7 +291,20 @@ export default function Bespoke() {
   }, [step])
 
   function update(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }))
+    setForm((prev) => {
+      const next = { ...prev, [field]: value }
+      // Dropping the party back to adults only takes the seat question away
+      // with it. Without this the answer survives in state, unseen, and rides
+      // along on an enquiry that no longer has a child in it.
+      if (
+        (field === 'children' || field === 'infants') &&
+        Number(next.children) === 0 &&
+        Number(next.infants) === 0
+      ) {
+        next.childSeat = false
+      }
+      return next
+    })
     // Clear an error as soon as the visitor addresses it, leaving stale red
     // text under a now-valid field is the most common form-UX failure.
     setErrors((prev) => {
@@ -279,22 +322,18 @@ export default function Bespoke() {
   }
 
   /**
-   * The three count fields, wired identically.
+   * Nights: still typed, and still not `type="number"`. A number input lets
+   * "-2", "1e5" and "3.5" be typed, reports them to JS as an empty string so
+   * the form cannot even see what went wrong, and changes value when the wheel
+   * rolls over it mid-scroll. `inputMode="numeric"` raises the same keypad with
+   * none of that, and the digit filter makes a negative or fractional count
+   * unreachable rather than merely rejected.
    *
-   * Deliberately not `type="number"`. A number input still lets "-2", "1e5"
-   * and "3.5" be typed, reports them to JS as an empty string so the form
-   * cannot even see what went wrong, and changes value when the wheel rolls
-   * over it mid-scroll. `inputMode="numeric"` raises the same phone keypad
-   * without any of that, and the filter below means the field can only ever
-   * hold digits, so a negative or fractional count is unreachable rather than
-   * merely rejected.
-   *
-   * Out-of-range values are clamped on blur rather than mid-keystroke: someone
-   * typing 12 passes through 1, and snapping that to the minimum as they type
-   * would fight them.
+   * Clamped on blur rather than mid-keystroke: someone typing 12 passes through
+   * 1, and snapping that to the minimum as they type would fight them.
    */
-  function countFieldProps(field) {
-    const { min, max } = LIMITS[field]
+  function nightsFieldProps() {
+    const { min, max } = LIMITS.nights
     return {
       type: 'text',
       inputMode: 'numeric',
@@ -304,14 +343,14 @@ export default function Bespoke() {
       role: 'spinbutton',
       'aria-valuemin': min,
       'aria-valuemax': max,
-      'aria-valuenow': form[field] === '' ? undefined : Number(form[field]),
-      'aria-invalid': Boolean(errors[field]),
+      'aria-valuenow': form.nights === '' ? undefined : Number(form.nights),
+      'aria-invalid': Boolean(errors.nights),
       maxLength: String(max).length,
-      value: form[field],
-      onChange: (e) => update(field, digitsOnly(e.target.value)),
+      value: form.nights,
+      onChange: (e) => update('nights', digitsOnly(e.target.value)),
       onBlur: () => {
-        const clamped = clampCount(form[field], field)
-        if (clamped !== form[field]) update(field, clamped)
+        const clamped = clampCount(form.nights, 'nights')
+        if (clamped !== form.nights) update('nights', clamped)
       },
       className: 'input',
     }
@@ -348,19 +387,15 @@ export default function Bespoke() {
       }
     }
 
-    if (fields.includes('adults')) {
-      const adults = Number(digitsOnly(data.adults))
-      if (!data.adults || !Number.isFinite(adults) || adults < LIMITS.adults.min) {
-        found.adults = t('bespoke.errors.adultsRequired')
-      } else if (adults > LIMITS.adults.max) {
-        found.adults = t('bespoke.errors.adultsMax', LIMITS.adults)
-      }
-    }
-
-    if (fields.includes('children') && data.children !== '') {
-      const children = Number(digitsOnly(data.children))
-      if (!Number.isFinite(children) || children > LIMITS.children.max) {
-        found.children = t('bespoke.errors.childrenMax', LIMITS.children)
+    // The menus make an out-of-range head count unreachable, so this only ever
+    // fires on a draft written before the menus existed, or on a value someone
+    // has gone out of their way to inject. Kept for exactly that reason.
+    for (const field of PARTY_FIELDS) {
+      if (!fields.includes(field)) continue
+      const { min, max } = LIMITS[field]
+      const count = Number(digitsOnly(data[field]))
+      if (data[field] === '' || !Number.isFinite(count) || count < min || count > max) {
+        found[field] = t(`bespoke.errors.${field}Range`, { min, max })
       }
     }
 
@@ -423,6 +458,11 @@ export default function Bespoke() {
     setErrors({})
     setStep((s) => Math.max(s - 1, 1))
   }
+
+  // A seat is worth asking about for either band: an infant needs a carrycot or
+  // a rear-facing seat, a child under about eleven needs a booster. Which one
+  // is a question for the driver, not for a form.
+  const needsSeat = Number(form.children) > 0 || Number(form.infants) > 0
 
   const phonePreview = internationalPhone(form.phoneCountry, form.phone)
   const phoneExpected = expectedDigits(form.phoneCountry)
@@ -641,7 +681,7 @@ export default function Bespoke() {
                       <input
                         id="nights"
                         name="nights"
-                        {...countFieldProps('nights')}
+                        {...nightsFieldProps()}
                         aria-describedby={errors.nights ? 'nights-error' : 'nights-hint'}
                       />
                     </Field>
@@ -691,43 +731,75 @@ export default function Bespoke() {
                 {/* ---- Step 2: party ---- */}
                 {step === 2 && (
                   <div className="mt-8 flex flex-col gap-7">
-                    <div className="grid gap-7 sm:grid-cols-2">
-                      <Field id="adults" label={t('bespoke.fields.adults')} error={errors.adults} required>
-                        <input
-                          id="adults"
-                          name="adults"
-                          {...countFieldProps('adults')}
-                          aria-describedby={errors.adults ? 'adults-error' : undefined}
-                        />
-                      </Field>
-
-                      <Field id="children" label={t('bespoke.fields.children')} error={errors.children}>
-                        <input
-                          id="children"
-                          name="children"
-                          {...countFieldProps('children')}
-                          aria-describedby={errors.children ? 'children-error' : undefined}
-                        />
-                      </Field>
+                    <div className="grid gap-7 sm:grid-cols-3">
+                      {/* Age bands, not just head counts. The label carries the
+                          band so nobody has to guess where an eleven-year-old
+                          belongs, which is the question that otherwise arrives
+                          by WhatsApp the next morning. */}
+                      {PARTY_FIELDS.map((field) => (
+                        <Field
+                          key={field}
+                          id={field}
+                          label={t(`bespoke.fields.${field}`)}
+                          error={errors[field]}
+                          required={field === 'adults'}
+                        >
+                          <select
+                            id={field}
+                            name={field}
+                            value={form[field]}
+                            onChange={(e) => update(field, e.target.value)}
+                            aria-invalid={Boolean(errors[field])}
+                            aria-describedby={errors[field] ? `${field}-error` : undefined}
+                            className="input cursor-pointer"
+                          >
+                            {countOptions(field).map((n) => (
+                              <option key={n} value={n}>
+                                {n}
+                              </option>
+                            ))}
+                          </select>
+                        </Field>
+                      ))}
                     </div>
 
-                    {/* Progressive disclosure: only asked when it is relevant. */}
-                    {Number(form.children) > 0 && (
-                      <Field
-                        id="childrenAges"
-                        label={t('bespoke.fields.childrenAges')}
-                        hint={t('bespoke.fields.childrenAgesHint')}
-                      >
-                        <input
-                          id="childrenAges"
-                          name="childrenAges"
-                          type="text"
-                          value={form.childrenAges}
-                          onChange={(e) => update('childrenAges', e.target.value)}
-                          aria-describedby="childrenAges-hint"
-                          className="input"
-                        />
-                      </Field>
+                    {/* Progressive disclosure: only asked when it is relevant.
+                        Same toggle treatment as the flexible-dates switch,
+                        because this one also changes what we go and arrange. */}
+                    {needsSeat && (
+                      <div>
+                        <label
+                          className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-card border px-4 text-sm transition-colors duration-base ease-enter has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brass-400 ${
+                            form.childSeat
+                              ? 'border-brass-500 bg-brass-500/10 text-brass-300'
+                              : 'border-ink-600 text-bone-dim hover:border-brass-700'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={form.childSeat}
+                            onChange={(e) => update('childSeat', e.target.checked)}
+                            className="h-5 w-5 cursor-pointer rounded-sm border-ink-600 bg-ink-850 text-brass-500 focus-visible:outline-none"
+                          />
+                          {t('bespoke.fields.childSeat')}
+                        </label>
+
+                        <div aria-live="polite">
+                          <AnimatePresence initial={false}>
+                            {form.childSeat && (
+                              <m.p
+                                initial={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                animate={reduced ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
+                                exit={reduced ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                transition={{ duration: reduced ? 0.15 : 0.32, ease: EASE_ENTER }}
+                                className="overflow-hidden text-sm font-light leading-relaxed text-brass-300/90"
+                              >
+                                <span className="block pt-3">{t('bespoke.fields.childSeatNote')}</span>
+                              </m.p>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}

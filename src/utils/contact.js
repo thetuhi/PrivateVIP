@@ -145,10 +145,14 @@ export function bespokeMessage(form, t, phone = '') {
           `${t('bespoke.fields.adults')}: ${form.adults || '-'}`,
   ]
 
-  if (Number(form.children) > 0) {
-    lines.push(`${t('bespoke.fields.children')}: ${form.children}`)
-    if (form.childrenAges) lines.push(`${t('bespoke.fields.childrenAges')}: ${form.childrenAges}`)
-  }
+  // Only mentioned when there are any. A line reading "Infants: 0" is noise on
+  // an enquiry that is read on a phone.
+  if (Number(form.children) > 0) lines.push(`${t('bespoke.fields.children')}: ${form.children}`)
+  if (Number(form.infants) > 0) lines.push(`${t('bespoke.fields.infants')}: ${form.infants}`)
+  // Only when asked for, and phrased as a statement rather than repeating the
+  // question with a "yes" after it. A "child seat: no" line would tell the
+  // office nothing it could not infer from the head counts anyway.
+  if (form.childSeat) lines.push(t('bespoke.fields.childSeatRequested'))
 
   if (form.services.length) {
     lines.push(`${t('bespoke.fields.services')}: ${form.services.map((s) => t(`bespoke.services.${s}`)).join(', ')}`)
