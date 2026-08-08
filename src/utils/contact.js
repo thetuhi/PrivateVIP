@@ -141,6 +141,7 @@ export function bespokeMessage(form, t, phone = '') {
     t('bespoke.title'),
     '',
     `${t('bespoke.fields.arrival')}: ${form.arrival || '-'}${form.flexible ? ` (${t('bespoke.fields.flexible')})` : ''}`,
+    `${t('bespoke.fields.nights')}: ${form.nights || '-'}`,
     `${t('bespoke.fields.adults')}: ${form.adults || '-'}`,
   ]
 
