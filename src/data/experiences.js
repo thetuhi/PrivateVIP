@@ -9,8 +9,9 @@
 // Every visitor-facing string is an object keyed by language code. A missing
 // language falls back to `en` (see localise() in src/utils/i18nHelpers.js).
 //
-// `priceFrom` is per party, not per person, that is the whole point of a
-// private tour and the UI says so explicitly.
+// Nothing here carries a figure. Every experience is chartered whole and quoted
+// per enquiry, so the catalog describes the day and the conversation settles the
+// rest. Do not reintroduce a `priceFrom` field: the UI has nowhere to put it.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const CATEGORIES = [
@@ -29,8 +30,6 @@ export const experiences = [
     featured: true,
     durationHours: 8,
     maxGuests: 6,
-    priceFrom: 890,
-    currency: 'EUR',
     coverImage: 'hagia-sophia-interior.webp',
     images: [
       'hagia-sophia-interior.webp',
@@ -165,8 +164,6 @@ export const experiences = [
     featured: true,
     durationHours: 6,
     maxGuests: 8,
-    priceFrom: 620,
-    currency: 'EUR',
     coverImage: 'meze-table.webp',
     images: ['meze-table.webp', 'kadikoy-market.webp', 'spice-merchant.webp', 'meyhane-evening.webp'],
     title: {
@@ -260,8 +257,6 @@ export const experiences = [
     featured: true,
     durationHours: 7,
     maxGuests: 8,
-    priceFrom: 1450,
-    currency: 'EUR',
     coverImage: 'bosphorus-mansion.webp',
     images: ['bosphorus-mansion.webp', 'rumeli-fortress.webp', 'bebek-morning.webp', 'anadolu-kavagi.webp', 'boat-deck.webp'],
     title: {
@@ -356,8 +351,6 @@ export const experiences = [
     featured: false,
     durationHours: 6,
     maxGuests: 6,
-    priceFrom: 740,
-    currency: 'EUR',
     coverImage: 'chora-mosaic.webp',
     images: ['chora-mosaic.webp', 'balat-street.webp', 'theodosian-walls.webp', 'fener-church.webp'],
     title: {
@@ -441,8 +434,6 @@ export const experiences = [
     featured: false,
     durationHours: 5,
     maxGuests: 4,
-    priceFrom: 580,
-    currency: 'EUR',
     coverImage: 'grand-bazaar-arch.webp',
     images: ['grand-bazaar-arch.webp', 'carpet-pile.webp', 'jeweller-workshop.webp', 'spice-bazaar.webp'],
     title: {
@@ -528,8 +519,6 @@ export const experiences = [
     featured: false,
     durationHours: 9,
     maxGuests: 8,
-    priceFrom: 1180,
-    currency: 'EUR',
     coverImage: 'buyukada-house.webp',
     images: ['buyukada-house.webp', 'island-pine-road.webp', 'island-jetty.webp', 'aya-yorgi-view.webp'],
     title: {
@@ -621,8 +610,6 @@ export const experiences = [
     featured: false,
     durationHours: 5,
     maxGuests: 6,
-    priceFrom: 690,
-    currency: 'EUR',
     coverImage: 'rooftop-night.webp',
     images: ['rooftop-night.webp', 'sema-ceremony.webp', 'bosphorus-bridge-night.webp', 'jazz-cellar.webp'],
     title: {
@@ -698,8 +685,6 @@ export const experiences = [
     featured: true,
     durationHours: 16,
     maxGuests: 6,
-    priceFrom: 3400,
-    currency: 'EUR',
     coverImage: 'cappadocia-balloons.webp',
     images: ['cappadocia-balloons.webp', 'goreme-valley.webp', 'cave-hotel-terrace.webp', 'underground-city.webp'],
     title: {

@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useGSAP } from '@gsap/react'
-import { Lock, Award, Receipt, Compass, ArrowRight, Sailboat, CarFront, PenLine } from 'lucide-react'
+import { Lock, Award, Compass, ArrowRight, Sailboat, CarFront, PenLine } from 'lucide-react'
 
 import SmartImage from '../components/SmartImage'
 import ScrollImage from '../components/motion/ScrollImage'
@@ -20,10 +20,12 @@ import { gsap, EASE } from '../motion/gsap'
 import { useMotion } from '../motion/motionContext'
 import MessageChannels from '../components/MessageChannels'
 
+// The list numbers itself from this order (01, 02, 03), and pillarsTitle counts
+// the entries in words. Adding or removing one means editing that string in all
+// three locales too.
 const PILLARS = [
   { key: 'private', Icon: Lock },
   { key: 'licensed', Icon: Award },
-  { key: 'pricing', Icon: Receipt },
   { key: 'flexible', Icon: Compass },
 ]
 

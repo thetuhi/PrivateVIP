@@ -1,17 +1,15 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Ruler, Users, BedDouble, Anchor, Check, ArrowRight, Expand } from 'lucide-react'
+import { Ruler, Users, BedDouble, Anchor, Check, Expand } from 'lucide-react'
 
 import ScrollImage from '../components/motion/ScrollImage'
 import SplitReveal from '../components/motion/SplitReveal'
-import Magnetic from '../components/motion/Magnetic'
 import PrimaryCta from '../components/PrimaryCta'
 import SectionHeading from '../components/SectionHeading'
 import Lightbox from '../components/Lightbox'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
 import { yachts, charterOccasions } from '../data/yachts'
-import { localise, formatPrice } from '../utils/localise'
+import { localise } from '../utils/localise'
 import { enquiryMessage } from '../utils/contact'
 import { useSeo } from '../utils/useSeo'
 import { fadeUp, viewportEarly } from '../motion/presets'
@@ -112,14 +110,15 @@ function YachtRow({ yacht, index, onOpenGallery }) {
         </ul>
 
         <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-t border-ink-700 pt-6">
+          {/* The charter figure used to head this block. The minimum booking
+              stays: it is the one term that rules a boat in or out before any
+              conversation happens, and it is not a price. */}
           <div>
-            <p className="text-xs uppercase tracking-[0.16em] text-bone-muted">{t('yachts.rateFrom')}</p>
-            <p className="mt-1 font-display text-3xl tabular-nums text-brass-400">
-              {formatPrice(yacht.rateFrom, yacht.currency, lang)}
+            <p className="text-xs uppercase tracking-[0.16em] text-bone-muted">{t('yachts.charterTerms')}</p>
+            <p className="mt-1.5 font-display text-2xl text-bone">
+              {t('common.minimumHours', { count: yacht.minHours })}
             </p>
-            <p className="mt-1 text-xs text-bone-muted">
-              {t('common.minimumHours', { count: yacht.minHours })} · {t('yachts.rateNote')}
-            </p>
+            <p className="mt-1 text-xs text-bone-muted">{t('yachts.charterNote')}</p>
           </div>
 
           <MessageChannels message={enquiryMessage(name, lang)} location={`yacht:${yacht.slug}`} />

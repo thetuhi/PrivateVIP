@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Phone, Mail, MapPin, Clock, ArrowRight, ExternalLink } from 'lucide-react'
+import { Phone, Mail, MapPin, ArrowRight } from 'lucide-react'
 
 import SectionHeading from '../components/SectionHeading'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
 import MapCard from '../components/MapCard'
 import { brand, fullAddress } from '../config/brand'
 import { whatsappLink, telegramLink, phoneLink, mailtoLink } from '../utils/contact'
-import { localise } from '../utils/localise'
 import { trackEvent } from '../utils/analytics'
 import { useSeo } from '../utils/useSeo'
 import { cardIn } from '../motion/presets'
@@ -15,8 +14,7 @@ import WhatsAppGlyph from '../components/icons/WhatsAppGlyph'
 import TelegramGlyph from '../components/icons/TelegramGlyph'
 
 export default function Contact() {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.resolvedLanguage ?? 'en'
+  const { t } = useTranslation()
 
   useSeo({
     title: t('contact.metaTitle'),
@@ -111,8 +109,8 @@ export default function Contact() {
               {t('contact.officeTitle')}
             </h2>
             {/* Kept at display size. It is the only physical address on the
-                site, and it balances the hours column opposite, which sets its
-                one line at the same weight. */}
+                site, and the column opposite now opens on the form heading,
+                which is set at the same weight. */}
             <address className="mt-5 font-display text-3xl not-italic leading-tight text-bone">{fullAddress}</address>
             <p className="prose-body mt-4">{t('contact.officeBody')}</p>
 
@@ -125,14 +123,6 @@ export default function Contact() {
           </Reveal>
 
           <Reveal>
-            <h2 className="eyebrow flex items-center gap-2">
-              <Clock className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
-              {t('contact.hoursTitle')}
-            </h2>
-            <p className="mt-5 font-display text-3xl leading-tight text-bone">{localise(brand.hours, lang)}</p>
-
-            <hr className="rule my-8" />
-
             <h2 className="text-display-sm text-bone">{t('contact.formTitle')}</h2>
             <p className="prose-body mt-3">{t('contact.formBody')}</p>
             <Link to="/plan" className="btn-primary mt-7">

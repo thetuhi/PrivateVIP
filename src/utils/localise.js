@@ -1,6 +1,7 @@
 // Catalog data stores visitor-facing strings as { en, ru, tr } objects rather
 // than as translation keys, because the content is the product and it belongs
-// next to the price and the photo list, not in a JSON file three folders away.
+// next to the itinerary and the photo list, not in a JSON file three folders
+// away.
 //
 // localise() resolves one of those objects for the active language, falling
 // back to English so a half-translated entry degrades to readable rather than
@@ -17,19 +18,6 @@ export function localise(value, lang) {
 /** Curried form for use inside a component that already knows its language. */
 export function makeLocaliser(lang) {
   return (value) => localise(value, lang)
-}
-
-/**
- * Locale-aware currency, with no fractional digits, every price on this site
- * is a round number and "€890.00" reads like a utility bill.
- */
-export function formatPrice(amount, currency, lang) {
-  const locale = { en: 'en-GB', ru: 'ru-RU', tr: 'tr-TR' }[lang] ?? 'en-GB'
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount)
 }
 
 export function formatDate(isoDate, lang) {

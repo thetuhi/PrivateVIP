@@ -1,9 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // VIP FLEET & TRANSFERS
 //
-// `transferRates` are fixed prices, not meters, that is the selling point, so
-// the table shows them plainly rather than hiding them behind an enquiry.
-// Update the numbers here and the Fleet page table updates.
+// Vehicles and the promises made about them. No figures: transfers are quoted
+// per route on enquiry, so there is no rate table to keep in step with reality.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const vehicles = [
@@ -65,55 +64,6 @@ export const vehicles = [
   },
 ]
 
-// Fixed, all-in prices. No meter, no surge, no "airport supplement".
-export const transferRates = [
-  {
-    id: 'ist-europe',
-    from: { en: 'Istanbul Airport (IST)', ru: 'Аэропорт Стамбул (IST)', tr: 'İstanbul Havalimanı (IST)' },
-    to: { en: 'European side hotels', ru: 'Отели европейской стороны', tr: 'Avrupa yakası otelleri' },
-    duration: { en: '45–70 min', ru: '45–70 мин', tr: '45–70 dk' },
-    saloon: 90,
-    van: 110,
-    sprinter: 160,
-  },
-  {
-    id: 'ist-asia',
-    from: { en: 'Istanbul Airport (IST)', ru: 'Аэропорт Стамбул (IST)', tr: 'İstanbul Havalimanı (IST)' },
-    to: { en: 'Asian side hotels', ru: 'Отели азиатской стороны', tr: 'Anadolu yakası otelleri' },
-    duration: { en: '60–95 min', ru: '60–95 мин', tr: '60–95 dk' },
-    saloon: 110,
-    van: 135,
-    sprinter: 185,
-  },
-  {
-    id: 'saw-europe',
-    from: { en: 'Sabiha Gökçen (SAW)', ru: 'Сабиха Гёкчен (SAW)', tr: 'Sabiha Gökçen (SAW)' },
-    to: { en: 'European side hotels', ru: 'Отели европейской стороны', tr: 'Avrupa yakası otelleri' },
-    duration: { en: '60–100 min', ru: '60–100 мин', tr: '60–100 dk' },
-    saloon: 105,
-    van: 130,
-    sprinter: 180,
-  },
-  {
-    id: 'saw-asia',
-    from: { en: 'Sabiha Gökçen (SAW)', ru: 'Сабиха Гёкчен (SAW)', tr: 'Sabiha Gökçen (SAW)' },
-    to: { en: 'Asian side hotels', ru: 'Отели азиатской стороны', tr: 'Anadolu yakası otelleri' },
-    duration: { en: '30–55 min', ru: '30–55 мин', tr: '30–55 dk' },
-    saloon: 75,
-    van: 95,
-    sprinter: 140,
-  },
-  {
-    id: 'hourly',
-    from: { en: 'At your disposal', ru: 'В ваше распоряжение', tr: 'Emrinizde' },
-    to: { en: 'Anywhere in the city, hourly', ru: 'Куда угодно в городе, почасово', tr: 'Şehirde her yere, saatlik' },
-    duration: { en: 'min. 4h', ru: 'от 4 ч', tr: 'en az 4 sa' },
-    saloon: 45,
-    van: 55,
-    sprinter: 75,
-  },
-]
-
 export const transferPromises = [
   {
     id: 'flight-tracked',
@@ -131,15 +81,6 @@ export const transferPromises = [
       en: 'Your driver waits at the arrivals gate with your name, takes the luggage, and walks you to the car. You do not go looking in a car park.',
       ru: 'Водитель ждёт у выхода из зоны прилёта с табличкой, забирает багаж и провожает к автомобилю. Вам не нужно искать его на парковке.',
       tr: 'Şoförünüz geliş kapısında adınızla bekler, bagajı alır ve sizi araca kadar götürür. Otoparkta kimseyi aramazsınız.',
-    },
-  },
-  {
-    id: 'fixed-price',
-    title: { en: 'The price is the price', ru: 'Цена окончательная', tr: 'Fiyat neyse odur' },
-    body: {
-      en: 'Quoted all-in: tolls, parking, waiting time and VAT. Traffic is our problem, not a line on your invoice.',
-      ru: 'Цена включает всё: проезд, парковку, время ожидания и НДС. Пробки, наша проблема, а не строка в вашем счёте.',
-      tr: 'Her şey dâhil: geçiş ücretleri, otopark, bekleme süresi ve KDV. Trafik bizim sorunumuz, faturanızda bir satır değil.',
     },
   },
   {

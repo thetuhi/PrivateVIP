@@ -456,38 +456,6 @@
     @apply border-brass-600 bg-ink-850;
   }
 
-  /* ---- Social links ----------------------------------------------------- */
-
-  /* One 40px square per network, identical box and identical glyph size, so a
-     second icon never makes the first look like a different control. The class
-     exists precisely so that stays true as more networks are added.
-
-     The press and the hover are carried by the glyph, not the box: the border
-     holds still, so hovering one square does not shift its neighbour. */
-
-  .social-link {
-    @apply inline-flex h-10 w-10 items-center justify-center rounded-card
-      border border-ink-700 text-bone-dim
-      transition-all duration-base ease-enter
-      hover:border-brass-600 hover:text-brass-400 hover:bg-brass-500/5
-      focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brass-400
-      active:scale-[0.96];
-    /* Suppresses the grey box Android paints over a tapped link. */
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .social-link > svg {
-    @apply transition-transform duration-base ease-enter;
-  }
-
-  /* Pointer devices only. A 1px lift under a fingertip is invisible, and on
-     touch the hover state sticks after the tap, which just looks broken. */
-  @media (hover: hover) and (pointer: fine) {
-    .social-link:hover > svg {
-      @apply -translate-y-px scale-110;
-    }
-  }
-
   /* ---- Footer rows ------------------------------------------------------ */
 
   /* Footer columns hold four or five links each. At the 44px touch minimum

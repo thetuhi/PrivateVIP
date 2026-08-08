@@ -49,11 +49,10 @@ export const brand = {
     coordinates: { lat: 41.0296, lng: 28.9752 }, // TODO
   },
 
-  hours: {
-    en: 'Reservations answered 09:00 – 22:00 (GMT+3), seven days',
-    ru: 'Бронирование: 09:00 – 22:00 (GMT+3), без выходных',
-    tr: 'Rezervasyon: 09:00 – 22:00 (GMT+3), her gün',
-  },
+  // No `hours`. Publishing a window invites people to read it as the only time
+  // we answer, and it dates the moment the office pattern changes. Response
+  // speed is promised in the copy instead ("within a few hours"), which is the
+  // thing a visitor actually wants to know.
 
   social: {
     instagram: 'https://www.instagram.com/privatevipturizm',

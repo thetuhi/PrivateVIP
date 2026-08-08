@@ -14,9 +14,9 @@ export const faqGroups = [
           tr: 'Nasıl rezervasyon yapabilirim?',
         },
         a: {
-          en: 'Send us your dates through the enquiry form or on WhatsApp. We reply within a few hours with a written itinerary and a fixed price. Nothing is charged until you have read it and said yes.',
-          ru: 'Отправьте даты через форму или в WhatsApp. Мы ответим в течение нескольких часов письменной программой и фиксированной ценой. Никаких списаний до вашего согласия.',
-          tr: 'Tarihlerinizi form üzerinden veya WhatsApp’tan gönderin. Birkaç saat içinde yazılı bir program ve sabit fiyatla döneriz. Siz okuyup onaylamadan hiçbir tahsilat yapılmaz.',
+          en: 'Send us your dates through the enquiry form or on WhatsApp. We reply within a few hours with a written itinerary and everything it involves, set out in full. Nothing is charged until you have read it and said yes.',
+          ru: 'Отправьте даты через форму или в WhatsApp. Мы ответим в течение нескольких часов письменной программой, где расписано всё, что в неё входит. Никаких списаний до вашего согласия.',
+          tr: 'Tarihlerinizi form üzerinden veya WhatsApp’tan gönderin. Birkaç saat içinde yazılı bir programla ve neleri kapsadığının tamamıyla döneriz. Siz okuyup onaylamadan hiçbir tahsilat yapılmaz.',
         },
       },
       {
@@ -30,19 +30,6 @@ export const faqGroups = [
           en: '30% to confirm the date, the balance on the day. Yacht charters and Cappadocia flights need 50% because we pay operators in advance. We accept card, bank transfer and cash in EUR, USD or TRY.',
           ru: '30% для подтверждения даты, остаток, в день программы. Для яхт-чартеров и перелётов в Каппадокию, 50%, поскольку мы оплачиваем операторов заранее. Принимаем карты, банковский перевод и наличные в EUR, USD или TRY.',
           tr: 'Tarihi kesinleştirmek için %30, kalanı gün içinde. Yat kiralamaları ve Kapadokya uçuşları için %50, çünkü operatörlere peşin ödüyoruz. Kart, havale ve EUR, USD veya TRY nakit kabul ediyoruz.',
-        },
-      },
-      {
-        id: 'price-per-person',
-        q: {
-          en: 'Is the price per person?',
-          ru: 'Цена указана за человека?',
-          tr: 'Fiyat kişi başı mı?',
-        },
-        a: {
-          en: 'No. Every price on this site is for the whole party. Two people and six people pay the same for the same private tour. The guide, car and driver cost what they cost. Entrance tickets and meals are the only per-head elements, and they are itemised in your quote.',
-          ru: 'Нет. Все цены на сайте указаны за всю группу. Двое и шестеро платят одинаково за один и тот же частный тур, гид, автомобиль и водитель стоят столько, сколько стоят. Только входные билеты и питание считаются на человека, и они выделены в вашей смете.',
-          tr: 'Hayır. Bu sitedeki her fiyat tüm grup içindir. İki kişi de altı kişi de aynı özel tur için aynı bedeli öder. Rehber, araç ve şoför ne tutuyorsa o tutar. Yalnızca giriş biletleri ve yemekler kişi başıdır ve teklifinizde ayrı ayrı gösterilir.',
         },
       },
     ],
@@ -143,9 +130,9 @@ export const faqGroups = [
           tr: 'Bahşiş vermeli miyiz?',
         },
         a: {
-          en: 'Only if you want to. Our guides and drivers are paid properly and are never told what a client gave. If you would like to, 10% of the tour price split between guide and driver is generous by local standards.',
-          ru: 'Только по желанию. Наши гиды и водители получают достойную оплату и никогда не узнают, кто сколько оставил. Если хотите, 10% от стоимости тура, разделённые между гидом и водителем, по местным меркам щедро.',
-          tr: 'Yalnızca istersen. Rehber ve şoförlerimiz düzgün ödeme alır ve bir misafirin ne verdiği kendilerine asla söylenmez. Vermek isterseniz, tur bedelinin %10’unu rehber ve şoför arasında paylaştırmak yerel ölçüde cömerttir.',
+          en: 'Only if you want to. Our guides and drivers are paid properly and are never told what a client gave. If you would like to, roughly a tenth of the day, split between guide and driver, is generous by local standards.',
+          ru: 'Только по желанию. Наши гиды и водители получают достойную оплату и никогда не узнают, кто сколько оставил. Если хотите, примерно десятая часть дня, разделённая между гидом и водителем, по местным меркам щедро.',
+          tr: 'Yalnızca istersen. Rehber ve şoförlerimiz düzgün ödeme alır ve bir misafirin ne verdiği kendilerine asla söylenmez. Vermek isterseniz, günün kabaca onda birini rehber ve şoför arasında paylaştırmak yerel ölçüde cömerttir.',
         },
       },
     ],

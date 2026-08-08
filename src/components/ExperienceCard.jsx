@@ -4,7 +4,7 @@ import { Clock, Users, ArrowUpRight } from 'lucide-react'
 import SmartImage from './SmartImage'
 import TiltCard from './motion/TiltCard'
 import { RevealItem } from './Reveal'
-import { localise, formatPrice } from '../utils/localise'
+import { localise } from '../utils/localise'
 import { cardIn } from '../motion/presets'
 
 /**
@@ -27,7 +27,7 @@ import { cardIn } from '../motion/presets'
  * parts read as one gesture rather than four:
  *
  *   · image scales up behind a fixed frame
- *   · the scrim deepens so the type stays legible as the picture brightens
+ *   · the scrim deepens, holding the picture down as it brightens
  *   · a brass rule wipes across beneath the title
  *   · the corner disc fills and the arrow steps out
  *   · the card itself tilts a degree or two toward the pointer
@@ -67,11 +67,8 @@ export default function ExperienceCard({ experience, priority = false, sizes, as
                 aria-hidden="true"
               />
 
-              {/* Price chip and affordance. Bottom-aligned, out of the title's way. */}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-5">
-                <span className="text-sm font-medium tracking-wide text-brass-300">
-                  {t('common.from')} {formatPrice(experience.priceFrom, experience.currency, lang)}
-                </span>
+              {/* Affordance. Bottom-aligned, out of the title's way. */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-end p-5">
                 <span
                   className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-brass-500/40 text-brass-400 transition-colors duration-base ease-enter group-hover:border-brass-500 group-hover:text-ink-950"
                   aria-hidden="true"
