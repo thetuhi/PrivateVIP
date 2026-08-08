@@ -105,9 +105,16 @@ export default function ScrollImage({
       if (typeof IntersectionObserver === 'undefined') {
         tl.progress(1)
       } else {
-        // -2% bottom margin is the old "top 98%": the wipe begins as the frame
-        // reaches the bottom edge, so it has finished by the time the frame is
-        // properly in view.
+        // A positive bottom margin, so the wipe begins ~220px before the frame
+        // enters and is finished by the time it is looked at.
+        //
+        // This was -2%, i.e. 2% *later* than the frame touching the bottom
+        // edge, on the reasoning that a 1.15s wipe would still complete in
+        // time. That holds at desktop scroll speeds and does not hold on a
+        // phone: a fling covers a viewport faster than the wipe runs, so the
+        // frame was arriving mid-clip and reading as an empty box. A clipped
+        // frame is indistinguishable from a missing photograph, which is the
+        // one thing this component must never look like.
         observer = new IntersectionObserver(
           (entries) => {
             const entry = entries[entries.length - 1]
@@ -134,7 +141,7 @@ export default function ScrollImage({
             // callback still gets the chance to rescue it.
             observer.disconnect()
           },
-          { rootMargin: '0px 0px -2% 0px' },
+          { rootMargin: '0px 0px 220px 0px' },
         )
         observer.observe(frame)
       }
