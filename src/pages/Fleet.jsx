@@ -1,13 +1,14 @@
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PlaneLanding, UserRoundCheck, BadgeEuro, Baby, Users, Briefcase, ArrowRight } from 'lucide-react'
+import { PlaneLanding, UserRoundCheck, Baby, Users, Briefcase, Expand } from 'lucide-react'
 
 import SmartImage from '../components/SmartImage'
 import SectionHeading from '../components/SectionHeading'
 import PrimaryCta from '../components/PrimaryCta'
+import Lightbox from '../components/Lightbox'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
-import { vehicles, transferRates, transferPromises } from '../data/fleet'
-import { localise, formatPrice } from '../utils/localise'
+import { vehicles, transferPromises } from '../data/fleet'
+import { localise } from '../utils/localise'
 import { useSeo } from '../utils/useSeo'
 import { fadeUp, cardIn } from '../motion/presets'
 import MessageChannels from '../components/MessageChannels'
@@ -15,110 +16,34 @@ import MessageChannels from '../components/MessageChannels'
 const PROMISE_ICONS = {
   'flight-tracked': PlaneLanding,
   'meet-greet': UserRoundCheck,
-  'fixed-price': BadgeEuro,
   'child-seats': Baby,
-}
-
-/**
- * Rate list, rendered twice from one data source:
- *
- *  - Below md, as stacked blocks. A five-column price table on a 375px screen
- *    either overflows or shrinks the type below readable size; stacking keeps
- *    every figure legible and avoids horizontal scroll entirely.
- *  - At md and above, as a real <table> with scope'd headers, which is what
- *    the data actually is and what a screen reader navigates best.
- */
-function RateTable() {
-  const { t, i18n } = useTranslation()
-  const lang = i18n.resolvedLanguage ?? 'en'
-
-  const classes = [
-    { key: 'saloon', label: t('fleet.tableSaloon') },
-    { key: 'van', label: t('fleet.tableVan') },
-    { key: 'sprinter', label: t('fleet.tableSprinter') },
-  ]
-
-  return (
-    <>
-      {/* Mobile */}
-      <ul className="mt-10 flex flex-col gap-4 md:hidden">
-        {transferRates.map((rate) => (
-          <li key={rate.id} className="card p-5">
-            <p className="font-display text-xl leading-snug text-bone">{localise(rate.from, lang)}</p>
-            <p className="mt-0.5 text-sm text-bone-dim">{localise(rate.to, lang)}</p>
-            <p className="mt-1 text-xs text-bone-muted">{localise(rate.duration, lang)}</p>
-
-            <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-ink-700 pt-4">
-              {classes.map(({ key, label }) => (
-                <div key={key}>
-                  <dt className="text-xs text-bone-muted">{label}</dt>
-                  <dd className="mt-0.5 font-display text-xl tabular-nums text-brass-400">
-                    {formatPrice(rate[key], 'EUR', lang)}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </li>
-        ))}
-      </ul>
-
-      {/* Desktop */}
-      <div className="mt-10 hidden md:block">
-        <table className="w-full border-collapse text-left">
-          {/* A caption gives screen reader users the gist before they navigate
-          the cells. Visually hidden, the section heading already says it. */}
-          <caption className="sr-only">{t('fleet.tableSummary')}</caption>
-          <thead>
-            <tr className="border-b border-ink-600">
-              <th scope="col" className="py-4 pr-6 text-xs uppercase tracking-[0.16em] text-bone-muted">
-                {t('fleet.tableRoute')}
-              </th>
-              <th scope="col" className="py-4 pr-6 text-xs uppercase tracking-[0.16em] text-bone-muted">
-                {t('fleet.tableDuration')}
-              </th>
-              {classes.map(({ key, label }) => (
-                <th
-                  key={key}
-                  scope="col"
-                  className="py-4 pr-6 text-right text-xs uppercase tracking-[0.16em] text-bone-muted last:pr-0"
-                >
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {transferRates.map((rate) => (
-              <tr key={rate.id} className="border-b border-ink-800 transition-colors duration-micro ease-enter hover:bg-ink-900">
-                <th scope="row" className="py-5 pr-6 font-normal">
-                  <span className="block font-display text-lg text-bone">{localise(rate.from, lang)}</span>
-                  <span className="mt-0.5 block text-sm font-light text-bone-dim">{localise(rate.to, lang)}</span>
-                </th>
-                <td className="py-5 pr-6 text-sm tabular-nums text-bone-muted">{localise(rate.duration, lang)}</td>
-                {classes.map(({ key }) => (
-                  <td key={key} className="py-5 pr-6 text-right font-display text-xl tabular-nums text-brass-400 last:pr-0">
-                    {formatPrice(rate[key], 'EUR', lang)}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="mt-5 max-w-prose text-sm text-bone-muted">{t('fleet.ratesNote')}</p>
-    </>
-  )
 }
 
 export default function Fleet() {
   const { t, i18n } = useTranslation()
   const lang = i18n.resolvedLanguage ?? 'en'
+  const [gallery, setGallery] = useState({ images: [], index: null, alt: '' })
 
   useSeo({
     title: t('fleet.metaTitle'),
     description: t('fleet.lede'),
   })
+
+  // Same contract as the yacht gallery: `index: null` is closed, so the images
+  // stay in state through the exit animation instead of vanishing mid-fade.
+  //
+  // Fleet photography sits flat in /images/fleet rather than in a per-slug
+  // folder the way experiences and yachts do, so the filenames are joined
+  // directly. Worth noting before anyone copies this line.
+  function openGallery(vehicle) {
+    setGallery({
+      images: vehicle.images.map((file) => `/images/fleet/${file}`),
+      index: 0,
+      alt: localise(vehicle.name, lang),
+    })
+  }
+
+  const closeGallery = () => setGallery((g) => ({ ...g, index: null }))
 
   return (
     <>
@@ -140,7 +65,10 @@ export default function Fleet() {
         <div className="shell">
           <h2 className="eyebrow">{t('fleet.promisesTitle')}</h2>
 
-          <RevealGroup as="ul" className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Three across, not four: the fourth promise was the pricing one.
+              At lg:grid-cols-4 three items leave a quarter of the row empty
+              and the band reads as a missing card. */}
+          <RevealGroup as="ul" className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
             {transferPromises.map((promise) => {
               const Icon = PROMISE_ICONS[promise.id]
               return (
@@ -155,18 +83,8 @@ export default function Fleet() {
         </div>
       </section>
 
-      {/* Rates */}
-      <section className="section border-t border-ink-800">
-        <div className="shell">
-          <SectionHeading eyebrow={t('fleet.ratesEyebrow')} title={t('fleet.ratesTitle')} />
-          <Reveal>
-            <RateTable />
-          </Reveal>
-        </div>
-      </section>
-
       {/* Vehicles */}
-      <section className="section border-t border-ink-800 bg-ink-900">
+      <section className="section border-t border-ink-800">
         <div className="shell">
           <SectionHeading eyebrow={t('fleet.vehiclesEyebrow')} title={t('fleet.vehiclesTitle')} />
 
@@ -175,13 +93,45 @@ export default function Fleet() {
               const name = localise(vehicle.name, lang)
               return (
                 <RevealItem as="li" key={vehicle.slug} variant={cardIn} className="flex flex-col">
-                  <SmartImage
-                    src={`/images/fleet/${vehicle.coverImage}`}
-                    alt={name}
-                    aspect="aspect-[4/3]"
-                    sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 92vw"
-                    className="rounded-card"
-                  />
+                  {/* The photograph is the control. Pressing a vehicle used to do
+                      nothing at all, which is the worst answer a card can give:
+                      it looks like a link, so it gets tapped, and nothing
+                      happens. Every vehicle has an interior shot that was sitting
+                      in the data and appearing nowhere, so the press now opens
+                      it. */}
+                  <button
+                    type="button"
+                    onClick={() => openGallery(vehicle)}
+                    aria-label={`${t('a11y.openGallery')}, ${name}`}
+                    className="group relative block w-full cursor-pointer overflow-hidden rounded-card"
+                  >
+                    <SmartImage
+                      src={`/images/fleet/${vehicle.coverImage}`}
+                      alt={name}
+                      aspect="aspect-[4/3]"
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 92vw"
+                      imgClassName="transition-transform duration-[900ms] ease-enter group-hover:scale-[1.05] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+
+                    {/* Always visible, not hover-only. A hover-revealed
+                        affordance tells a phone nothing, and a phone is where
+                        this was reported: there is no hover state to discover it
+                        with, so the badge has to be there before the tap. It
+                        brightens for a pointer rather than appearing. */}
+                    <span
+                      className="pointer-events-none absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full border border-bone/20 bg-ink-950/60 text-bone backdrop-blur-sm transition-colors duration-base ease-enter group-hover:border-brass-500 group-hover:bg-ink-950/80 group-hover:text-brass-400"
+                      aria-hidden="true"
+                    >
+                      <Expand className="h-4 w-4" strokeWidth={1.5} />
+                    </span>
+
+                    {/* Pointer-only depth: the whole frame dims so the badge
+                        reads as the target rather than as a sticker. */}
+                    <span
+                      className="pointer-events-none absolute inset-0 bg-ink-950/0 transition-colors duration-base ease-enter group-hover:bg-ink-950/25 group-focus-visible:bg-ink-950/25"
+                      aria-hidden="true"
+                    />
+                  </button>
 
                   <p className="eyebrow mt-5">{localise(vehicle.tier, lang)}</p>
                   <h3 className="mt-2 font-display text-xl leading-tight text-bone">{name}</h3>
@@ -205,8 +155,10 @@ export default function Fleet() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="section border-t border-ink-800">
+      {/* CTA. Carries the ink-900 band the removed rates section used to hand
+          to Vehicles, so the page still alternates tone rather than running
+          three unbroken ink-950 sections to the footer. */}
+      <section className="section border-t border-ink-800 bg-ink-900">
         <div className="shell flex flex-col items-start gap-8 lg:flex-row lg:items-end lg:justify-between">
           <Reveal className="max-w-2xl">
             <h2 className="text-display-md text-balance text-bone">{t('fleet.ctaTitle')}</h2>
@@ -220,6 +172,15 @@ export default function Fleet() {
           </Reveal>
         </div>
       </section>
+
+      <Lightbox
+        images={gallery.images}
+        index={gallery.index}
+        alt={gallery.alt}
+        onClose={closeGallery}
+        onPrev={() => setGallery((g) => ({ ...g, index: (g.index - 1 + g.images.length) % g.images.length }))}
+        onNext={() => setGallery((g) => ({ ...g, index: (g.index + 1) % g.images.length }))}
+      />
     </>
   )
 }
