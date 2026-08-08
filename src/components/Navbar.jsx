@@ -10,6 +10,7 @@ import Magnetic from './motion/Magnetic'
 import { drawer, scrim } from '../motion/presets'
 import MessageChannels from './MessageChannels'
 import PrimaryCta from './PrimaryCta'
+import SocialLinks from './SocialLinks'
 
 const LINKS = [
   { to: '/experiences', key: 'nav.experiences' },
@@ -200,6 +201,14 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            {/* Social sits in the bar itself rather than inside the drawer, so
+                it is reachable at every width without opening a menu. It is
+                deliberately the leftmost control in this group: the language
+                button and the CTA are things you do here, the social links
+                send you away, so they should not be the last thing under a
+                thumb travelling toward the burger. */}
+            <SocialLinks location="header" />
+
             <LanguageSwitcher />
 
             {/* The one magnetic control in the header. Making every nav item
