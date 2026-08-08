@@ -25,6 +25,17 @@ import WhatsAppGlyph from '../components/icons/WhatsAppGlyph'
 import TelegramGlyph from '../components/icons/TelegramGlyph'
 
 const DRAFT_KEY = 'pvi-bespoke-draft'
+
+// Four steps, one question each: when, who, what, and how to reach you.
+//
+// Dates and party were briefly merged into a single step to save a tap. It read
+// badly: a date field, a toggle and three dropdowns under one heading is a form,
+// not a question, and the rule needed to separate the two halves only advertised
+// that they did not belong together. A step that has to be divided internally
+// should have been two steps. Reverted.
+//
+// The tap saved is not worth much anyway. What made this form feel long was a
+// redundant field, not the step count, so `nights` is the thing that went.
 const TOTAL_STEPS = 4
 
 const INTEREST_KEYS = ['history', 'food', 'water', 'shopping', 'art', 'family', 'photography', 'nightlife']
@@ -33,7 +44,12 @@ const PACE_KEYS = ['gentle', 'balanced', 'full']
 
 const EMPTY_FORM = {
   arrival: '',
-  nights: '',
+  // No `nights`. It was a second date question wearing a different hat: anyone
+  // who knows their arrival either knows their departure too, in which case they
+  // write it in the notes, or does not know it yet, in which case a number they
+  // invent to get past the field is worse than no answer. It never changed what
+  // we quoted or what we planned, so it was pure friction on the one screen that
+  // has to feel effortless.
   flexible: false,
   // Three age bands, because a guide, a car and a boat all price and seat them
   // differently: infants 0-1, children 2-11, adults 12 and over.
@@ -68,11 +84,11 @@ const EMPTY_FORM = {
  * empty string, nothing to clamp on blur. Anyone larger is told to write to us,
  * which is the honest answer for a private tour.
  *
- * Nights stays typed. It has sixty valid values and no visitor wants to scroll
- * a sixty-item menu to say "four".
+ * Every count here is therefore a menu, which is what let the typed-input
+ * machinery, the digit filter and the clamp-on-blur, go: nights was the only
+ * field that needed it and nights is gone.
  */
 const LIMITS = {
-  nights: { min: 1, max: 60 },
   adults: { min: 1, max: 6 },
   children: { min: 0, max: 6 },
   infants: { min: 0, max: 6 },
@@ -102,7 +118,7 @@ function countOptions(field) {
 
 /** Which fields belong to which step, so validation can run per step. */
 const STEP_FIELDS = {
-  1: ['arrival', 'nights'],
+  1: ['arrival'],
   2: PARTY_FIELDS,
   3: [],
   4: ['name', 'contact', 'consent'],
@@ -321,41 +337,6 @@ export default function Bespoke() {
     })
   }
 
-  /**
-   * Nights: still typed, and still not `type="number"`. A number input lets
-   * "-2", "1e5" and "3.5" be typed, reports them to JS as an empty string so
-   * the form cannot even see what went wrong, and changes value when the wheel
-   * rolls over it mid-scroll. `inputMode="numeric"` raises the same keypad with
-   * none of that, and the digit filter makes a negative or fractional count
-   * unreachable rather than merely rejected.
-   *
-   * Clamped on blur rather than mid-keystroke: someone typing 12 passes through
-   * 1, and snapping that to the minimum as they type would fight them.
-   */
-  function nightsFieldProps() {
-    const { min, max } = LIMITS.nights
-    return {
-      type: 'text',
-      inputMode: 'numeric',
-      autoComplete: 'off',
-      // Announces the bounds to assistive tech, which `type="text"` otherwise
-      // gives no way to know.
-      role: 'spinbutton',
-      'aria-valuemin': min,
-      'aria-valuemax': max,
-      'aria-valuenow': form.nights === '' ? undefined : Number(form.nights),
-      'aria-invalid': Boolean(errors.nights),
-      maxLength: String(max).length,
-      value: form.nights,
-      onChange: (e) => update('nights', digitsOnly(e.target.value)),
-      onBlur: () => {
-        const clamped = clampCount(form.nights, 'nights')
-        if (clamped !== form.nights) update('nights', clamped)
-      },
-      className: 'input',
-    }
-  }
-
   function toggleInList(field, value) {
     setForm((prev) => {
       const list = prev[field]
@@ -375,15 +356,6 @@ export default function Bespoke() {
         if (!data.flexible) found.arrival = t('bespoke.errors.arrivalRequired')
       } else if (data.arrival < todayIso()) {
         found.arrival = t('bespoke.errors.arrivalPast')
-      }
-    }
-
-    // Nights is optional, but a number that is there has to be a real one.
-    // Zero nights is not a trip and sixty is not a private tour.
-    if (fields.includes('nights') && data.nights !== '') {
-      const nights = Number(digitsOnly(data.nights))
-      if (!Number.isFinite(nights) || nights < LIMITS.nights.min || nights > LIMITS.nights.max) {
-        found.nights = t('bespoke.errors.nightsRange', LIMITS.nights)
       }
     }
 
@@ -667,25 +639,6 @@ export default function Bespoke() {
                       />
                     </Field>
 
-                    <Field
-                      id="nights"
-                      label={t('bespoke.fields.nights')}
-                      error={errors.nights}
-                      hint={
-                        form.flexible
-                          ? t('bespoke.fields.nightsHintFlexible')
-                          : t('bespoke.fields.nightsHint', LIMITS.nights)
-                      }
-                      relaxed={form.flexible}
-                    >
-                      <input
-                        id="nights"
-                        name="nights"
-                        {...nightsFieldProps()}
-                        aria-describedby={errors.nights ? 'nights-error' : 'nights-hint'}
-                      />
-                    </Field>
-
                     {/* The toggle is styled as a real control rather than a bare
                         checkbox, because pressing it genuinely changes what the
                         form asks for. */}
@@ -725,6 +678,7 @@ export default function Bespoke() {
                         </AnimatePresence>
                       </div>
                     </div>
+
                   </div>
                 )}
 
