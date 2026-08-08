@@ -4,8 +4,10 @@
 // Same editing rules as experiences.js: add a block, drop WebP into
 // public/images/yachts/<slug>/, list the filenames.
 //
-// `rates` are per charter, not per person. `minHours` is the shortest booking
-// the operator will accept, the UI shows both so nobody has to ask.
+// `minHours` is the shortest booking the operator will accept, and the one
+// commercial term still worth stating up front: it changes which boats suit a
+// two-hour sunset run. Charter figures are not held here; every boat is quoted
+// per enquiry.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const yachts = [
@@ -28,8 +30,6 @@ export const yachts = [
     cabins: 4,
     crew: 3,
     minHours: 4,
-    rateFrom: 1600,
-    currency: 'EUR',
     bestFor: {
       en: 'Long lazy afternoons, families, anyone who would rather sail than be driven',
       ru: 'Долгие неспешные дни, семьи, те, кто предпочитает идти под парусом',
@@ -61,8 +61,6 @@ export const yachts = [
     cabins: 3,
     crew: 3,
     minHours: 3,
-    rateFrom: 2400,
-    currency: 'EUR',
     bestFor: {
       en: 'Sunset charters, corporate entertaining, covering distance comfortably',
       ru: 'Закатные чартеры, корпоративные приёмы, комфортные длинные переходы',
@@ -94,8 +92,6 @@ export const yachts = [
     cabins: 0,
     crew: 2,
     minHours: 2,
-    rateFrom: 750,
-    currency: 'EUR',
     bestFor: {
       en: 'Proposals, anniversaries, two people who want the strait to themselves',
       ru: 'Предложения руки, годовщины, двое, которым нужен весь пролив',
@@ -127,8 +123,6 @@ export const yachts = [
     cabins: 4,
     crew: 2,
     minHours: 6,
-    rateFrom: 1350,
-    currency: 'EUR',
     bestFor: {
       en: 'Families with children, swimming days, guests who dislike heel',
       ru: 'Семьи с детьми, дни для купания, гости, не любящие крен',

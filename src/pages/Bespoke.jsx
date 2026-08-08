@@ -25,6 +25,14 @@ import WhatsAppGlyph from '../components/icons/WhatsAppGlyph'
 import TelegramGlyph from '../components/icons/TelegramGlyph'
 
 const DRAFT_KEY = 'pvi-bespoke-draft'
+
+// Four steps, one question each: when, who, what, and how to reach you.
+//
+// Dates and party were briefly merged into a single step to save a tap. It read
+// badly: a date field, a toggle and three dropdowns under one heading is a form,
+// not a question, and the rule needed to separate the two halves only advertised
+// that they did not belong together. A step that has to be divided internally
+// should have been two steps. Reverted, and the tap is not worth much anyway.
 const TOTAL_STEPS = 4
 
 const INTEREST_KEYS = ['history', 'food', 'water', 'shopping', 'art', 'family', 'photography', 'nightlife']
@@ -33,6 +41,10 @@ const PACE_KEYS = ['gentle', 'balanced', 'full']
 
 const EMPTY_FORM = {
   arrival: '',
+  // Optional, and left optional on purpose. Someone who does not know their
+  // length yet should be able to walk past this rather than invent a number to
+  // get to the next step, so nothing here is required and an empty value sends
+  // as "-".
   nights: '',
   flexible: false,
   // Three age bands, because a guide, a car and a boat all price and seat them
@@ -322,12 +334,12 @@ export default function Bespoke() {
   }
 
   /**
-   * Nights: still typed, and still not `type="number"`. A number input lets
-   * "-2", "1e5" and "3.5" be typed, reports them to JS as an empty string so
-   * the form cannot even see what went wrong, and changes value when the wheel
-   * rolls over it mid-scroll. `inputMode="numeric"` raises the same keypad with
-   * none of that, and the digit filter makes a negative or fractional count
-   * unreachable rather than merely rejected.
+   * Nights: typed, and deliberately not `type="number"`. A number input lets
+   * "-2", "1e5" and "3.5" be typed, reports them to JS as an empty string so the
+   * form cannot even see what went wrong, and changes value when the wheel rolls
+   * over it mid-scroll. `inputMode="numeric"` raises the same keypad with none of
+   * that, and the digit filter makes a negative or fractional count unreachable
+   * rather than merely rejected.
    *
    * Clamped on blur rather than mid-keystroke: someone typing 12 passes through
    * 1, and snapping that to the minimum as they type would fight them.
@@ -725,6 +737,7 @@ export default function Bespoke() {
                         </AnimatePresence>
                       </div>
                     </div>
+
                   </div>
                 )}
 

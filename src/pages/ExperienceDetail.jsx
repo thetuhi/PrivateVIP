@@ -13,7 +13,7 @@ import Lightbox from '../components/Lightbox'
 import Reveal, { RevealGroup, RevealItem } from '../components/Reveal'
 import ExperienceCard from '../components/ExperienceCard'
 import { getExperience, experiences } from '../data/experiences'
-import { localise, formatPrice } from '../utils/localise'
+import { localise } from '../utils/localise'
 import { enquiryMessage } from '../utils/contact'
 import { trackEvent } from '../utils/analytics'
 import { useSeo } from '../utils/useSeo'
@@ -63,12 +63,10 @@ export default function ExperienceDetail() {
           name: localise(step.title, lang),
         })),
       },
-      offers: {
-        '@type': 'Offer',
-        price: experience.priceFrom,
-        priceCurrency: experience.currency,
-        availability: 'https://schema.org/InStock',
-      },
+      // No `offers`. Schema.org wants `price` and `priceCurrency` on an Offer,
+      // and a figure published in structured data is still a published figure:
+      // it is what Google would print under the result. Omitting the node
+      // entirely is the honest encoding of "quoted on enquiry".
     }
   }, [experience, title, summary, lang])
 
@@ -147,8 +145,11 @@ export default function ExperienceDetail() {
       {/* ---- Meta bar --------------------------------------------------- */}
       <section className="border-y border-ink-700 bg-ink-900">
         <div className="shell">
-          <dl className="grid grid-cols-2 divide-ink-700 md:grid-cols-3 md:divide-x">
-            <div className="py-6 md:pr-8">
+          {/* Two facts, not three. The price cell used to sit third and it was
+              the one that forced a col-span-2 wrap on mobile; two cells fit
+              side by side at every width, so the divider can run always-on. */}
+          <dl className="grid grid-cols-2 divide-x divide-ink-700">
+            <div className="py-6 pr-6 md:pr-8">
               <dt className="eyebrow flex items-center gap-2">
                 <Clock className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
                 {t('experiences.duration')}
@@ -158,7 +159,7 @@ export default function ExperienceDetail() {
               </dd>
             </div>
 
-            <div className="py-6 md:px-8">
+            <div className="py-6 pl-6 md:pl-8">
               <dt className="eyebrow flex items-center gap-2">
                 <Users className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
                 {t('experiences.groupSize')}
@@ -166,14 +167,6 @@ export default function ExperienceDetail() {
               <dd className="mt-2 font-display text-2xl text-bone">
                 {t('common.upToGuests', { count: experience.maxGuests })}
               </dd>
-            </div>
-
-            <div className="col-span-2 border-t border-ink-700 py-6 md:col-span-1 md:border-t-0 md:pl-8">
-              <dt className="eyebrow">{t('experiences.priceLabel')}</dt>
-              <dd className="mt-2 font-display text-2xl tabular-nums text-brass-400">
-                {t('common.from')} {formatPrice(experience.priceFrom, experience.currency, lang)}
-              </dd>
-              <dd className="mt-1 text-xs text-bone-muted">{t('experiences.priceNote')}</dd>
             </div>
           </dl>
         </div>
@@ -252,11 +245,17 @@ export default function ExperienceDetail() {
             <div className="lg:sticky lg:top-[calc(var(--header-h)+2rem)]">
               <Reveal>
                 <div className="card p-6">
-                  <p className="eyebrow">{t('experiences.priceLabel')}</p>
-                  <p className="mt-3 font-display text-4xl tabular-nums text-bone">
-                    {formatPrice(experience.priceFrom, experience.currency, lang)}
+                  {/* The rail used to lead with a figure. What replaces it has
+                      to be a real headline, not a caption: this is the first
+                      thing read in the column and an eyebrow alone above a
+                      horizontal rule reads as a card that failed to load. */}
+                  <p className="eyebrow">{t('experiences.railEyebrow')}</p>
+                  <p className="mt-3 font-display text-3xl leading-tight text-bone">
+                    {t('experiences.railTitle')}
                   </p>
-                  <p className="mt-1 text-sm text-bone-muted">{t('common.perParty')}</p>
+                  <p className="mt-3 text-sm font-light leading-relaxed text-bone-dim">
+                    {t('experiences.railBody')}
+                  </p>
 
                   <hr className="my-6 border-ink-700" />
 
@@ -421,11 +420,12 @@ export default function ExperienceDetail() {
         style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
       >
         <div className="flex items-center gap-3">
+          {/* The bar used to show the figure here. The title takes the slot
+              instead: after a long scroll through the itinerary and the
+              gallery, a bare "Enquire" gives no clue what is being enquired
+              about, and the h1 is far off screen by then. */}
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-bone-muted">{t('common.from')}</p>
-            <p className="font-display text-xl tabular-nums leading-tight text-bone">
-              {formatPrice(experience.priceFrom, experience.currency, lang)}
-            </p>
+            <p className="truncate font-display text-lg leading-tight text-bone">{title}</p>
           </div>
           <Link
             to={`/plan?experience=${experience.slug}`}

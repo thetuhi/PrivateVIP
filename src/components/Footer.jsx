@@ -2,12 +2,9 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Phone, Mail, MapPin } from 'lucide-react'
 import Logo from './Logo'
-import InstagramGlyph from './icons/InstagramGlyph'
-import TikTokGlyph from './icons/TikTokGlyph'
 import { brand, fullAddress } from '../config/brand'
 import { whatsappLink, telegramLink, phoneLink, mailtoLink, mapsLink } from '../utils/contact'
 import { trackEvent } from '../utils/analytics'
-import { localise } from '../utils/localise'
 import WhatsAppGlyph from './icons/WhatsAppGlyph'
 import TelegramGlyph from './icons/TelegramGlyph'
 
@@ -29,15 +26,9 @@ const LEGAL = [
   { to: '/policy/privacy', key: 'legalPrivacy' },
 ]
 
-/**
- * Social accounts, in the order they are shown. Each entry renders only if
- * `brand.social[key]` holds a URL, so an account that does not exist yet leaves
- * no empty square behind. Names are brand names, never translated.
- */
-const SOCIAL = [
-  { key: 'instagram', label: 'Instagram', Glyph: InstagramGlyph },
-  { key: 'tiktok', label: 'TikTok', Glyph: TikTokGlyph },
-]
+// Social lives in the header now, see SocialLinks. It is not repeated here: two
+// copies of the same two links on one page dilutes both, and the footer already
+// carries five ways to reach us directly.
 
 export default function Footer() {
   const { t, i18n } = useTranslation()
@@ -58,25 +49,6 @@ export default function Footer() {
           <div className="lg:col-span-4">
             <Logo />
             <p className="prose-body mt-4 max-w-xs text-sm">{t('footer.tagline')}</p>
-
-            {SOCIAL.some((s) => brand.social[s.key]) && (
-              <ul className="mt-4 flex items-center gap-2">
-                {SOCIAL.filter((s) => brand.social[s.key]).map(({ key, label, Glyph }) => (
-                  <li key={key}>
-                    <a
-                      href={brand.social[key]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                      onClick={() => trackEvent('social_click', { network: key })}
-                      className="social-link"
-                    >
-                      <Glyph className="h-4 w-4" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           {/* Link columns */}
@@ -180,10 +152,6 @@ export default function Footer() {
                 </a>
               </li>
             </ul>
-
-            {/* Hours live in brand.js, not the locale files, they are company
-                data, not interface copy, and change without a code release. */}
-            <p className="mt-3 text-sm text-bone-muted">{localise(brand.hours, lang)}</p>
           </div>
         </div>
 
@@ -193,8 +161,6 @@ export default function Footer() {
           <p>{t('footer.rights', { year: new Date().getFullYear(), name: brand.legalName })}</p>
           <p>{t('footer.licence', { number: brand.tursabNumber })}</p>
         </div>
-
-        <p className="mt-2 max-w-prose text-xs text-bone-muted/80">{t('footer.builtNote')}</p>
       </div>
     </footer>
   )

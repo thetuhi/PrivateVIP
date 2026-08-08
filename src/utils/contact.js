@@ -140,9 +140,9 @@ export function bespokeMessage(form, t, phone = '') {
   const lines = [
     t('bespoke.title'),
     '',
-      `${t('bespoke.fields.arrival')}: ${form.arrival || '-'}${form.flexible ? ` (${t('bespoke.fields.flexible')})` : ''}`,
-        `${t('bespoke.fields.nights')}: ${form.nights || '-'}`,
-          `${t('bespoke.fields.adults')}: ${form.adults || '-'}`,
+    `${t('bespoke.fields.arrival')}: ${form.arrival || '-'}${form.flexible ? ` (${t('bespoke.fields.flexible')})` : ''}`,
+    `${t('bespoke.fields.nights')}: ${form.nights || '-'}`,
+    `${t('bespoke.fields.adults')}: ${form.adults || '-'}`,
   ]
 
   // Only mentioned when there are any. A line reading "Infants: 0" is noise on

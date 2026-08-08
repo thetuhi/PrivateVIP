@@ -109,17 +109,44 @@ export function stillVariant(variant) {
   }
 }
 
-/** Shared viewport config: fire once, slightly before the element is centred. */
-export const viewportOnce = { once: true, amount: 0.2, margin: '0px 0px -80px 0px' }
+/**
+ * Shared viewport config: fire once, with a head start.
+ *
+ * ⚠ `amount` must stay 'some'. Never put a fraction here.
+ *
+ * A fraction is measured against the *element*, not the viewport, and
+ * RevealGroup wraps an entire grid whose height is not a constant: the
+ * three-column deck that is ~540px tall on a desktop stacks into ~4500px on a
+ * phone. So a fraction does not merely fire late on a phone, past a certain
+ * height it can never fire at all. This was `amount: 0.2`, which asked for 20%
+ * of the element on screen; on the eight-card /experiences grid that is 900px,
+ * inside a ~700px viewport, a condition no amount of scrolling can satisfy.
+ * Children inherit `visible` from the stagger parent, so the entire grid stayed
+ * at opacity 0 permanently: every photograph on the page simply absent. It
+ * looked fine inside a single category only because one or two cards are short
+ * enough for 20% to still be reachable, which is what made it read as "the
+ * photos need coaxing" rather than as a hard bug.
+ *
+ * 'some' means "any part of it is intersecting", which is the condition actually
+ * wanted here and the only one that means the same thing at every breakpoint and
+ * every content length.
+ *
+ * `margin` is a positive bottom inset, growing the detection box downward, so
+ * the entrance begins ~140px before the element enters and has resolved by the
+ * time it is looked at. It used to be -80px, which shrank the box and delayed
+ * the trigger, stacking a second delay on top of the impossible threshold.
+ *
+ * A soft 520ms fade-up firing slightly early is invisible. Firing late, or never,
+ * is the only failure mode a visitor actually notices.
+ */
+export const viewportOnce = { once: true, amount: 'some', margin: '0px 0px 140px 0px' }
 
 /**
- * For blocks taller than a comfortable fraction of the viewport: yacht rows,
- * stacked feature panels.
+ * For blocks taller than the viewport: yacht rows, stacked feature panels.
  *
- * `amount: 0.2` asks for a fifth of the element to be on screen, which on a
- * 650px row is 130px of scrolling after it first appears, and the positive
- * bottom margin below turns that into a head start instead. The element begins
- * revealing 200px before it enters, so by the time it is actually looked at the
- * animation has already resolved rather than starting under the reader.
+ * Same 'some' rule as above, and for these it is not optional, these blocks are
+ * taller than the viewport by definition, so any fraction would be unsatisfiable
+ * for exactly the elements this preset exists to serve. The larger 200px margin
+ * gives the taller block a correspondingly longer head start.
  */
-export const viewportEarly = { once: true, amount: 0.01, margin: '0px 0px 200px 0px' }
+export const viewportEarly = { once: true, amount: 'some', margin: '0px 0px 200px 0px' }

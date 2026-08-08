@@ -80,7 +80,7 @@ function Shell() {
           owns the change between routes, and fading the container as well would
           double the effect and delay first paint on a cold load. */}
       <main id="main" tabIndex={-1} className="min-h-dvh focus:outline-none">
-        <RouteErrorBoundary>
+        <RouteErrorBoundary scope="route">
           <Suspense fallback={<RouteFallback />}>
             <Routes location={location}>
               <Route path="/" element={<Home />} />
@@ -113,7 +113,15 @@ export default function App() {
     // `motion` import.
     <MotionProvider>
       <LazyMotion features={domAnimation} strict>
-        <Shell />
+        {/* Outer boundary. The route-level one inside <main> cannot catch a
+            throw from Navbar, Footer, CookieBanner or PageTransition, because
+            those are its siblings, not its children. Without this, a failure in
+            the header took the whole site to a blank white page with no message
+            and no way back. Two boundaries, so a broken *page* still keeps the
+            navigation around it, and a broken *shell* still says something. */}
+        <RouteErrorBoundary scope="app">
+          <Shell />
+        </RouteErrorBoundary>
       </LazyMotion>
     </MotionProvider>
   )

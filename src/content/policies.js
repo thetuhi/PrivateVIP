@@ -29,9 +29,9 @@ export const policies = {
       {
         h: { en: 'Payment', ru: 'Оплата', tr: 'Ödeme' },
         p: {
-          en: 'A 30% deposit confirms the date (50% for yacht charters and flight-inclusive itineraries, because we settle with those operators in advance). The balance is payable on the day, by card, transfer or cash in EUR, USD or TRY. Prices are quoted inclusive of VAT.',
-          ru: 'Предоплата 30% подтверждает дату (50% для яхт-чартеров и программ с перелётом, поскольку мы рассчитываемся с этими операторами заранее). Остаток оплачивается в день программы картой, переводом или наличными в EUR, USD или TRY. Цены указаны с НДС.',
-          tr: '%30 ön ödeme tarihi kesinleştirir (yat kiralamaları ve uçuş dâhil programlarda %50, çünkü bu operatörlerle önceden hesaplaşırız). Bakiye gün içinde kart, havale veya EUR, USD ya da TRY nakit ile ödenir. Fiyatlar KDV dâhildir.',
+          en: 'A 30% deposit confirms the date (50% for yacht charters and flight-inclusive itineraries, because we settle with those operators in advance). The balance is payable on the day, by card, transfer or cash in EUR, USD or TRY. Everything we quote you is inclusive of VAT.',
+          ru: 'Предоплата 30% подтверждает дату (50% для яхт-чартеров и программ с перелётом, поскольку мы рассчитываемся с этими операторами заранее). Остаток оплачивается в день программы картой, переводом или наличными в EUR, USD или TRY. Всё, что мы вам предлагаем, указано с НДС.',
+          tr: '%30 ön ödeme tarihi kesinleştirir (yat kiralamaları ve uçuş dâhil programlarda %50, çünkü bu operatörlerle önceden hesaplaşırız). Bakiye gün içinde kart, havale veya EUR, USD ya da TRY nakit ile ödenir. Size verdiğimiz her teklif KDV dâhildir.',
         },
       },
       {
@@ -45,9 +45,9 @@ export const policies = {
       {
         h: { en: 'Cancellation by us', ru: 'Отмена с нашей стороны', tr: 'Bizim tarafımızdan iptal' },
         p: {
-          en: 'If we cancel for any reason at all (weather, mechanical failure, a guide falling ill), you choose between a full refund processed the same day or a rescheduled date at the same price. We do not issue credit notes against future bookings.',
-          ru: 'Если отменяем мы по любой причине, погода, техническая неисправность, болезнь гида, что угодно, вы выбираете между полным возвратом в тот же день и переносом на другую дату по той же цене. Мы не выдаём кредит-ноты в счёт будущих броней.',
-          tr: 'Herhangi bir nedenle biz iptal edersek (hava, mekanik arıza, rehberin hastalanması), aynı gün işleme alınan tam iade ile aynı fiyattan yeni bir tarih arasında seçim yaparsınız. Gelecekteki rezervasyonlara mahsuben alacak belgesi düzenlemeyiz.',
+          en: 'If we cancel for any reason at all (weather, mechanical failure, a guide falling ill), you choose between a full refund processed the same day or a rescheduled date on the same terms. We do not issue credit notes against future bookings.',
+          ru: 'Если отменяем мы по любой причине, погода, техническая неисправность, болезнь гида, что угодно, вы выбираете между полным возвратом в тот же день и переносом на другую дату на тех же условиях. Мы не выдаём кредит-ноты в счёт будущих броней.',
+          tr: 'Herhangi bir nedenle biz iptal edersek (hava, mekanik arıza, rehberin hastalanması), aynı gün işleme alınan tam iade ile aynı koşullarla yeni bir tarih arasında seçim yaparsınız. Gelecekteki rezervasyonlara mahsuben alacak belgesi düzenlemeyiz.',
         },
       },
       {
